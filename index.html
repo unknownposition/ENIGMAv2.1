@@ -399,9 +399,26 @@ function bindBoard(id){
   if(board[i]){selectedSquare=i;renderSetup();}
  });
  b.addEventListener('pointerdown',e=>{
-  if(e.button!==0)return; const sq=e.target.closest('.sq'); if(!sq)return; const i=Number(sq.dataset.index);
-  if(board[i]){dragFrom=i;sq.setPointerCapture?.(e.pointerId);e.preventDefault();}
- });
+  if(e.button!==0)return;
+  const sq=e.target.closest('.sq');
+  if(!sq)return;
+  const i=Number(sq.dataset.index);
+
+  if(tool==='erase'){
+    board[i]=null;
+    selectedSquare=null;
+    last=null;
+    lastPieceTap=null;
+    renderSetup();
+    return;
+  }
+
+  if(board[i]){
+    dragFrom=i;
+    sq.setPointerCapture?.(e.pointerId);
+    e.preventDefault();
+  }
+});
  b.addEventListener('pointerup',e=>{
   if(dragFrom===null)return;
   const from=dragFrom; dragFrom=null; const hit=document.elementFromPoint(e.clientX,e.clientY)?.closest?.('.sq');
