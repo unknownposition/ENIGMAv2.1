@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ENIGMA v3.8 • Chess Analysis</title>
+<title>ENIGMA • Chess Analysis</title>
 <style>
 :root{--bg:#0b1711;--panel:#13251b;--panel2:#182d20;--line:rgba(238,242,223,.14);--cream:#eef2df;--muted:#aab7a6;--accent:#6f9852;--accent2:#83aa67;--dark:#31552e;--light:#eef2df;--selected:#a7cf80;--gold:#c9ad5b;--bad:#d57c71}
 *{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:radial-gradient(circle at 18% 0%,#15301f 0%,transparent 30%),radial-gradient(circle at 88% 12%,#15281f 0%,transparent 32%),var(--bg);color:var(--cream);font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif}button,input{font:inherit}button{cursor:pointer}
@@ -21,12 +21,12 @@
 </head>
 <body>
 <div class="app">
-<header class="header"><div class="brand"><span class="brand-mark"><span class="brand-mouth"></span></span><span class="brand-name">ENIGMA</span><span class="brand-divider"></span><span class="version">v3.4</span></div><div class="header-right">CHESS ANALYSIS</div></header>
+<header class="header"><div class="brand"><span class="brand-mark"><span class="brand-mouth"></span></span><span class="brand-name">ENIGMA</span><span class="brand-divider"></span><span class="version">CHESS ANALYSIS WEBPAGE</span></div><div class="header-right">Created 2026, ENIGMA Passion Project.</div></header>
 <main class="main">
 <section id="setupView" class="view setup-view"><div class="setup-content">
 <div class="board-frame"><div id="board" class="board"></div></div>
-<div class="setup-tools"><div id="palette" class="palette"></div><button id="eraser" class="tool-btn">Erase</button><span id="toolStatus" style="font-size:10px;color:var(--muted);white-space:nowrap">Move / place pieces</span></div>
-<div class="action-row"><button id="clear" class="action-btn">Clear</button><button id="start" class="action-btn">Starting position</button><button id="flip" class="action-btn">Flip ↕</button><div class="side-toggle"><button id="whiteTurn" class="active">W</button><button id="blackTurn">B</button></div></div>
+<div class="setup-tools"><div id="palette" class="palette"></div><button id="eraser" class="tool-btn">Erase</button><span id="toolStatus" style="font-size:10px;color:var(--muted);white-space:nowrap">Drag to move pieces, click to place, eraser button to erase</span></div>
+<div class="action-row"><button id="clear" class="action-btn">Clear</button><button id="start" class="action-btn">Starting position</button><button id="flip" class="action-btn">Flip Board</button><div class="side-toggle"><button id="whiteTurn" class="active">W</button><button id="blackTurn">B</button></div></div>
 <div class="fen-row"><input id="fen" placeholder="Paste FEN…"><button id="load" class="fen-load">Load FEN</button></div>
 <button id="go" class="go-btn">GO</button><div id="setupStatus" class="status-line">Ready.</div>
 </div></section>
