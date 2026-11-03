@@ -423,10 +423,10 @@ function showResults(result,engineMoves=[],engineStatus=''){
  bestMove=chosen;
  if(chosen){
   $('best').textContent=san(chosen,board);
-  $('filterName').textContent=engineBest?'Engine-supported move':(result.hit>=0?'Filter '+(result.hit+1):'Filter fallback');
+  $('filterName').textContent=engineBest?'ENIGMA Filter Chosen Move':(result.hit>=0?'Filter '+(result.hit+1):'Unavailable Logic');
   if(engineBest){
    if(filterCandidate&&uciMove(filterCandidate)===uciMove(engineBest)){
-    $('why').textContent='The engine-supported recommendation also matches ENIGMA Filter '+(result.hit+1)+'.';
+    $('why').textContent='ENIGMA engine selected this move as it satisfied Filter '+(result.hit+1)+'.';
    }else if(filterCandidate){
     $('why').textContent='ENIGMA engine selected this move. Without basic chess logic, it would of selected ' +san(filterCandidate,board)+' (Filter '+(result.hit+1)+'). This is because without logic, the way chess engines work is that it selects the first generated move that satisfises a filter, which may not be the best one.';
    }else{
@@ -451,7 +451,7 @@ function showResults(result,engineMoves=[],engineStatus=''){
  }
  const top=engineMoves.slice(0,3).map((x,i)=>(i+1)+'. '+x.uci).join('   ');
  $('status').textContent=(engineBest?'Engine analysis completed. ':'Engine analysis did not return a usable move. ')+(top?'Top engine moves: '+top+'. ':'')+engineStatus;
- $('engineBadge').textContent=engineBest?'ENGINE-ASSISTED':'FILTER FALLBACK';
+ $('engineBadge').textContent=engineBest?'ENIGMA FILTERS':'LOGIC UNAVAILABLE';
  $('engineBadge').style.background=engineBest?'#203d28':'#4a2925';
  $('engineBadge').style.borderColor=engineBest?'#638451':'#9a5c50';
  renderAnalysis();
