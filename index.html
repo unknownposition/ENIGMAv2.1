@@ -441,6 +441,26 @@ function createsTactic(b,m){
  return false;
 }
 
+// Check the Stockfish move itself against each filter in priority order.
+// This does not depend on whether ENIGMA's move generator included that move.
+function evaluateCandidateFilters(b,color,m,threat){
+ if(!m)return [];
+ const opponent=color==='w'?'b':'w';
+ return [
+  isCheckmate(makeMove(b,m),opponent),
+  moveGivesCheck(b,m)&&matingRepliesAfter(b,m,color),
+  threat&&avoidsMateThreat(b,m,color),
+  !moveGivesCheck(b,m)&&matingRepliesAfter(b,m,color),
+  !!m.promotion,
+  createsTactic(b,m),
+  moveGivesCheck(b,m)&&!moveLosesMaterial(b,m)&&moveSafety(b,m).safe,
+  hasUndefendedGain(b,m)||defendsHanging(b,m),
+  attacksAPiece(b,m),
+  !!m.castle,
+  developsPiece(b,m)
+ ];
+}
+
 function filterMoves(b,color,moves){
  const results=[];
  // 1. Immediate checkmate.
@@ -769,10 +789,12 @@ function showResults(result,engineMoves=[],engineStatus=''){
   const chosen=engineBest||filterCandidate;
   bestMove=chosen;
 
-  // Highlight the filter that contains the move actually being displayed.
-  const chosenFilter=chosen
-    ? result.results.findIndex(moves=>moves.some(m=>uciMove(m)===uciMove(chosen)))
-    : -1;
+  // Test the displayed Stockfish move through filters 1–11 in order.
+  // The first matching filter is the priority filter highlighted below.
+  const candidateFilterResults=chosen
+    ? evaluateCandidateFilters(board,side,chosen,result.threat)
+    : [];
+  const chosenFilter=candidateFilterResults.findIndex(matches=>matches);
 
   if(chosen){
     $('best').textContent=san(chosen,board);
@@ -820,7 +842,7 @@ function showResults(result,engineMoves=[],engineStatus=''){
   }
   const top=engineMoves.slice(0,3).map((x,i)=>(i+1)+'. '+x.uci).join('   ');
   $('status').textContent=(engineBest?'Engine analysis completed. ':'Engine analysis did not return a usable move. ')+(top?'Top engine moves: '+top+'. ':'')+engineStatus;
-  $('engineBadge').textContent=engineBest?'ENIGMA FILTERS':'LOGIC UNAVAILABLE';
+  $('engineBadge').textContent=engineBest?'STOCKFISH + FILTERS':'LOGIC UNAVAILABLE';
   $('engineBadge').style.background=engineBest?'#203d28':'#4a2925';
   $('engineBadge').style.borderColor=engineBest?'#638451':'#9a5c50';
   renderAnalysis();
