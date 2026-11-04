@@ -437,181 +437,39 @@ function clearTools(){
  document.querySelectorAll('.piece-btn,.tool-btn').forEach(x=>x.classList.remove('selected','active'));
  $('toolStatus').textContent='Move / place pieces';
 }
-function paletteInit(){const p=$('palette');palette.forEach(([k,name])=>{const b=document.createElement('button');b.className='piece-btn';b.title=(k[0]==='w'?'White ':'Black ')+name;const s=document.createElement('span');s.className='palette-glyph '+(k[0]==='w'?'white-piece':'black-piece');s.textContent=glyph[k];b.appendChild(s);b.onclick=()=>{tool=k;selectedSquare=null;selectedMoves=[];$('toolStatus').textContent=(k[0]==='w'?'White ':'Black ')+name;document.querySelectorAll('.piece-btn,.tool-btn').forEach(x=>x.classList.remove('selected','active'));b.classList.add('selected')};p.appendChild(b)})}
-function bindBoard(id){
- const b=$(id);
- let dragFrom=null, suppressClick=false, lastPieceTap=null;
+function paletteInit(){
+ const p=$('palette');
 
- b.addEventListener('click',e=>{
-  if(suppressClick){
-   suppressClick=false;
-   return;
-  }
+ palette.forEach(([k,name])=>{
+  const b=document.createElement('button');
+  b.className='piece-btn';
+  b.title=(k[0]==='w'?'White ':'Black ')+name;
 
-  const sq=e.target.closest('.sq');
-  if(!sq)return;
-  const i=Number(sq.dataset.index);
+  const s=document.createElement('span');
+  s.className='palette-glyph '+(k[0]==='w'?'white-piece':'black-piece');
+  s.textContent=glyph[k];
 
-  // Preserve the existing double-click deletion feature.
-  const now=Date.now();
-  if(!tool && board[i] && lastPieceTap && lastPieceTap.square===i && now-lastPieceTap.time<=420){
-   board[i]=null;
-   selectedSquare=null;
-   selectedMoves=[];
-   last=null;
-   lastPieceTap=null;
-   renderSetup();
-   return;
-  }
+  b.appendChild(s);
 
-  lastPieceTap=(!tool && board[i])?{square:i,time:now}:null;
-
-  if(tool==='erase'){
-   board[i]=null;
-   selectedSquare=null;
-   selectedMoves=[];
-   last=null;
-   lastPieceTap=null;
-   renderSetup();
-   return;
-  }
-
-  if(tool){
-   board[i]=tool;
-   selectedSquare=null;
-   selectedMoves=[];
-   last=null;
-   renderSetup();
-   return;
-  }
-
-  // If a piece is already selected, check whether this is a legal destination.
-  if(selectedSquare!==null){
-   const move=selectedMoves.find(m=>m.to===i&&(!m.promotion||m.promotion==='q'));
-
-   if(move){
-    applyStateMove(move);
-    board=makeMove(board,move);
-    side=side==='w'?'b':'w';
-    last={from:move.from,to:move.to};
+  b.onclick=()=>{
+   if(tool===k){
+    tool=null;
+    $('toolStatus').textContent='No piece selected';
+    b.classList.remove('selected');
+   }else{
+    tool=k;
     selectedSquare=null;
     selectedMoves=[];
-    $('whiteTurn').classList.toggle('active',side==='w');
-    $('blackTurn').classList.toggle('active',side==='b');
-    renderSetup();
-    return;
+    $('toolStatus').textContent=(k[0]==='w'?'White ':'Black ')+name;
+
+    document.querySelectorAll('.piece-btn,.tool-btn')
+      .forEach(x=>x.classList.remove('selected','active'));
+
+    b.classList.add('selected');
    }
+  };
 
-   // Clicking the selected piece again deselects it.
-   if(i===selectedSquare){
-    selectedSquare=null;
-    selectedMoves=[];
-    renderSetup();
-    return;
-   }
-
-   // Clicking another friendly piece selects that piece instead.
-   if(board[i]&&board[i][0]===side){
-    selectedSquare=i;
-    selectedMoves=legalMoves(board,side).filter(m=>m.from===i);
-    renderSetup();
-    return;
-   }
-
-   // Clicking an invalid destination cancels the selection.
-   selectedSquare=null;
-   selectedMoves=[];
-   renderSetup();
-   return;
-  }
-
-  // Select a piece belonging to the side whose turn it is.
-  if(board[i]&&board[i][0]===side){
-   selectedSquare=i;
-   selectedMoves=legalMoves(board,side).filter(m=>m.from===i);
-   renderSetup();
-  }
- });
-
- b.addEventListener('pointerdown',e=>{
-  if(e.button!==0)return;
-
-  const sq=e.target.closest('.sq');
-  if(!sq)return;
-
-  const i=Number(sq.dataset.index);
-
-  if(tool==='erase'){
-   board[i]=null;
-   selectedSquare=null;
-   selectedMoves=[];
-   last=null;
-   lastPieceTap=null;
-   renderSetup();
-   return;
-  }
-
-  if(tool)return;
-
-  if(board[i]){
-   dragFrom=i;
-   sq.setPointerCapture?.(e.pointerId);
-  }
- });
-
- b.addEventListener('pointerup',e=>{
-  if(dragFrom===null)return;
-
-  const from=dragFrom;
-  dragFrom=null;
-
-  const hit=document.elementFromPoint(e.clientX,e.clientY)?.closest?.('.sq');
-
-  // Releasing on the original square allows the normal click event to select it.
-  if(hit&&Number(hit.dataset.index)===from)return;
-
-  if(hit&&hit.closest('.board')){
-   const to=Number(hit.dataset.index);
-
-   if(to!==from&&board[from]){
-    const m={
-     from,
-     to,
-     color:side,
-     piece:board[from][1],
-     capture:board[to]||null
-    };
-
-    board[to]=board[from];
-    board[from]=null;
-    applyStateMove(m);
-    selectedSquare=null;
-    selectedMoves=[];
-    last={from,to};
-    suppressClick=true;
-    renderSetup();
-    return;
-   }
-  }
-
-  suppressClick=true;
- });
-
- b.addEventListener('pointercancel',()=>{
-  dragFrom=null;
- });
-
- b.addEventListener('contextmenu',e=>{
-  e.preventDefault();
-  const sq=e.target.closest('.sq');
-  if(!sq)return;
-
-  const i=Number(sq.dataset.index);
-  board[i]=null;
-  selectedSquare=null;
-  selectedMoves=[];
-  last=null;
-  renderSetup();
+  p.appendChild(b);
  });
 }
 
