@@ -615,22 +615,6 @@ function bindBoard(id){
  });
 }
 
-  if(board[i]){
-    dragFrom=i;
-    sq.setPointerCapture?.(e.pointerId);
-    e.preventDefault();
-  }
-});
- b.addEventListener('pointerup',e=>{
-  if(dragFrom===null)return;
-  const from=dragFrom; dragFrom=null; const hit=document.elementFromPoint(e.clientX,e.clientY)?.closest?.('.sq');
-  if(hit && hit.closest('.board')){const to=Number(hit.dataset.index);if(to!==from && board[from]){const m={from,to,color:side,piece:board[from][1],capture:board[to]||null};board[to]=board[from];board[from]=null;applyStateMove(m);selectedSquare=null;last={from,to};suppressClick=true;renderSetup();return;}}
-  suppressClick=true;selectedSquare=from;renderSetup();
- });
- b.addEventListener('pointercancel',()=>{dragFrom=null;});
- b.addEventListener('contextmenu',e=>{e.preventDefault();const sq=e.target.closest('.sq');if(!sq)return;const i=Number(sq.dataset.index);board[i]=null;selectedSquare=null;last=null;renderSetup();});
-}
-
 function startingPosition(){board=parseFenBoard(initialFen);side='w';castling='KQkq';epSquare=null;flipped=false;last=null;bestMove=null;clearTools();$('whiteTurn').classList.add('active');$('blackTurn').classList.remove('active');$('analysisView').classList.add('hidden');$('analysisView').setAttribute('aria-hidden','true');$('setupView').classList.remove('hidden');$('fen').value='';renderSetup();$('setupStatus').textContent='Starting position loaded. Standard chess position ready.';$('status').textContent='Starting position loaded.';}
 function clearBoard(){board=Array(64).fill(null);last=null;bestMove=null;clearTools();renderSetup();$('setupStatus').textContent='Position cleared.'}
 function loadFen(f){try{const a=f.trim().split(/\s+/);if(a.length<2)throw Error('Paste a valid FEN.');board=parseFenBoard(a[0]);side=a[1]==='b'?'b':'w';castling=a[2]&&a[2]!=='-'?a[2]:'-';epSquare=a[3]&&a[3]!=='-'?parseSquare(a[3]):null;last=null;bestMove=null;selectedSquare=null;selectedMoves=[];$('whiteTurn').classList.toggle('active',side==='w');$('blackTurn').classList.toggle('active',side==='b');renderSetup();$('setupStatus').textContent='FEN loaded.'}catch(e){$('setupStatus').textContent='Invalid FEN: '+e.message}}
