@@ -473,6 +473,184 @@ function paletteInit(){
  });
 }
 
+  
+function bindBoard(id){
+ const b=$(id);
+ let dragFrom=null, suppressClick=false, lastPieceTap=null;
+
+ b.addEventListener('click',e=>{
+  if(suppressClick){
+   suppressClick=false;
+   return;
+  }
+
+  const sq=e.target.closest('.sq');
+  if(!sq)return;
+  const i=Number(sq.dataset.index);
+
+  // Preserve the existing double-click deletion feature.
+  const now=Date.now();
+  if(!tool && board[i] && lastPieceTap && lastPieceTap.square===i && now-lastPieceTap.time<=420){
+   board[i]=null;
+   selectedSquare=null;
+   selectedMoves=[];
+   last=null;
+   lastPieceTap=null;
+   renderSetup();
+   return;
+  }
+
+  lastPieceTap=(!tool && board[i])?{square:i,time:now}:null;
+
+  if(tool==='erase'){
+   board[i]=null;
+   selectedSquare=null;
+   selectedMoves=[];
+   last=null;
+   lastPieceTap=null;
+   renderSetup();
+   return;
+  }
+
+  if(tool){
+   board[i]=tool;
+   selectedSquare=null;
+   selectedMoves=[];
+   last=null;
+   renderSetup();
+   return;
+  }
+
+  // If a piece is already selected, check whether this is a legal destination.
+  if(selectedSquare!==null){
+   const move=selectedMoves.find(m=>m.to===i&&(!m.promotion||m.promotion==='q'));
+
+   if(move){
+    applyStateMove(move);
+    board=makeMove(board,move);
+    side=side==='w'?'b':'w';
+    last={from:move.from,to:move.to};
+    selectedSquare=null;
+    selectedMoves=[];
+    $('whiteTurn').classList.toggle('active',side==='w');
+    $('blackTurn').classList.toggle('active',side==='b');
+    renderSetup();
+    return;
+   }
+
+   // Clicking the selected piece again deselects it.
+   if(i===selectedSquare){
+    selectedSquare=null;
+    selectedMoves=[];
+    renderSetup();
+    return;
+   }
+
+   // Clicking another friendly piece selects that piece instead.
+   if(board[i]&&board[i][0]===side){
+    selectedSquare=i;
+    selectedMoves=legalMoves(board,side).filter(m=>m.from===i);
+    renderSetup();
+    return;
+   }
+
+   // Clicking an invalid destination cancels the selection.
+   selectedSquare=null;
+   selectedMoves=[];
+   renderSetup();
+   return;
+  }
+
+  // Select a piece belonging to the side whose turn it is.
+  if(board[i]&&board[i][0]===side){
+   selectedSquare=i;
+   selectedMoves=legalMoves(board,side).filter(m=>m.from===i);
+   renderSetup();
+  }
+ });
+
+ b.addEventListener('pointerdown',e=>{
+  if(e.button!==0)return;
+
+  const sq=e.target.closest('.sq');
+  if(!sq)return;
+
+  const i=Number(sq.dataset.index);
+
+  if(tool==='erase'){
+   board[i]=null;
+   selectedSquare=null;
+   selectedMoves=[];
+   last=null;
+   lastPieceTap=null;
+   renderSetup();
+   return;
+  }
+
+  if(tool)return;
+
+  if(board[i]){
+   dragFrom=i;
+   sq.setPointerCapture?.(e.pointerId);
+  }
+ });
+
+ b.addEventListener('pointerup',e=>{
+  if(dragFrom===null)return;
+
+  const from=dragFrom;
+  dragFrom=null;
+
+  const hit=document.elementFromPoint(e.clientX,e.clientY)?.closest?.('.sq');
+
+  // Releasing on the original square allows the normal click event to select it.
+  if(hit&&Number(hit.dataset.index)===from)return;
+
+  if(hit&&hit.closest('.board')){
+   const to=Number(hit.dataset.index);
+
+   if(to!==from&&board[from]){
+    const m={
+     from,
+     to,
+     color:side,
+     piece:board[from][1],
+     capture:board[to]||null
+    };
+
+    board[to]=board[from];
+    board[from]=null;
+    applyStateMove(m);
+    selectedSquare=null;
+    selectedMoves=[];
+    last={from,to};
+    suppressClick=true;
+    renderSetup();
+    return;
+   }
+  }
+
+  suppressClick=true;
+ });
+
+ b.addEventListener('pointercancel',()=>{
+  dragFrom=null;
+ });
+
+ b.addEventListener('contextmenu',e=>{
+  e.preventDefault();
+  const sq=e.target.closest('.sq');
+  if(!sq)return;
+
+  const i=Number(sq.dataset.index);
+  board[i]=null;
+  selectedSquare=null;
+  selectedMoves=[];
+  last=null;
+  renderSetup();
+ });
+}
+
 function startingPosition(){board=parseFenBoard(initialFen);side='w';castling='KQkq';epSquare=null;flipped=false;last=null;bestMove=null;clearTools();$('whiteTurn').classList.add('active');$('blackTurn').classList.remove('active');$('analysisView').classList.add('hidden');$('analysisView').setAttribute('aria-hidden','true');$('setupView').classList.remove('hidden');$('fen').value='';renderSetup();$('setupStatus').textContent='Starting position loaded. Standard chess position ready.';$('status').textContent='Starting position loaded.';}
 function clearBoard(){board=Array(64).fill(null);last=null;bestMove=null;clearTools();renderSetup();$('setupStatus').textContent='Position cleared.'}
 function loadFen(f){try{const a=f.trim().split(/\s+/);if(a.length<2)throw Error('Paste a valid FEN.');board=parseFenBoard(a[0]);side=a[1]==='b'?'b':'w';castling=a[2]&&a[2]!=='-'?a[2]:'-';epSquare=a[3]&&a[3]!=='-'?parseSquare(a[3]):null;last=null;bestMove=null;selectedSquare=null;selectedMoves=[];$('whiteTurn').classList.toggle('active',side==='w');$('blackTurn').classList.toggle('active',side==='b');renderSetup();$('setupStatus').textContent='FEN loaded.'}catch(e){$('setupStatus').textContent='Invalid FEN: '+e.message}}
