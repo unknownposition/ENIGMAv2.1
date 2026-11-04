@@ -6,60 +6,153 @@
 <title>ENIGMA • Chess Analysis</title>
 <style>
 :root{--bg:#0b1711;--panel:#13251b;--panel2:#182d20;--line:rgba(238,242,223,.14);--cream:#eef2df;--muted:#aab7a6;--accent:#6f9852;--accent2:#83aa67;--dark:#31552e;--light:#eef2df;--selected:#a7cf80;--gold:#c9ad5b;--bad:#d57c71}
-*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:radial-gradient(circle at 18% 0%,#15301f 0%,transparent 30%),radial-gradient(circle at 88% 12%,#15281f 0%,transparent 32%),var(--bg);color:var(--cream);font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif}button,input{font:inherit}button{cursor:pointer}
-.app{width:100%;height:100%;display:flex;flex-direction:column}.header{height:56px;flex:0 0 56px;display:flex;align-items:center;justify-content:space-between;padding:0 28px;border-bottom:1px solid var(--line);background:rgba(7,17,12,.92)}
-.brand{display:flex;align-items:center;gap:12px}.brand-mark{position:relative;width:32px;height:24px}.brand-mark:before{content:"";position:absolute;left:4px;top:7px;width:24px;height:14px;border-radius:50%;background:#8caf6c}.brand-mark:after{content:"";position:absolute;left:9px;top:2px;width:6px;height:6px;border-radius:50%;background:#8caf6c;box-shadow:9px 0 0 #8caf6c}.brand-mouth{position:absolute;left:11px;top:14px;width:11px;height:3px;border-radius:4px;background:var(--bg);z-index:2}.brand-name{font:24px Georgia,"Times New Roman",serif;letter-spacing:.26em}.brand-divider{width:1px;height:23px;background:rgba(238,242,223,.24)}.version{font-size:11px;letter-spacing:.16em;color:var(--muted)}.header-right{font-size:10px;letter-spacing:.34em;color:#cbd4c7}
-.main{flex:1;min-height:0;height:calc(100vh - 56px);padding:10px 20px 12px}.view{width:100%;height:100%}.hidden{display:none!important}
-.setup-view{display:flex;align-items:center;justify-content:center}.setup-content{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px}.board-frame{width:min(64vh,680px,78vw);aspect-ratio:1;padding:5px;border:1px solid rgba(238,242,223,.18);border-radius:12px;background:#0f2116;box-shadow:0 22px 55px rgba(0,0,0,.32);flex:0 0 auto}.board{width:100%;height:100%;display:grid;grid-template-columns:repeat(8,1fr);grid-template-rows:repeat(8,1fr);border-radius:8px;overflow:hidden}.sq{position:relative;width:100%;height:100%;display:flex;align-items:center;justify-content:center;user-select:none;touch-action:none;overflow:hidden}.sq.light{background:var(--light)}.sq.dark{background:var(--dark)}.sq.last{box-shadow:inset 0 0 0 999px rgba(167,207,128,.22)}.sq.click-selected{box-shadow:inset 0 0 0 4px var(--selected),inset 0 0 0 999px rgba(167,207,128,.10)}.sq.best{box-shadow:inset 0 0 0 4px var(--gold),inset 0 0 0 999px rgba(201,173,91,.14)}
-.coord{position:absolute;z-index:5;font-size:9px;font-weight:800;line-height:1;pointer-events:none}.rank{left:4px;top:4px}.file{right:4px;bottom:4px}.sq.light .coord{color:#43583f}.sq.dark .coord{color:#e2ead8}
-.piece{font-family:Georgia,"Times New Roman",serif;font-size:clamp(32px,7.2vh,82px);line-height:1;pointer-events:none;user-select:none;z-index:2}.white-piece{color:#fff;text-shadow:1.5px 1.5px 0 #162018,-1.5px 1.5px 0 #162018,1.5px -1.5px 0 #162018,-1.5px -1.5px 0 #162018,0 3px 3px rgba(0,0,0,.2)}.black-piece{color:#111;text-shadow:0 1px 0 rgba(255,255,255,.5),0 3px 3px rgba(0,0,0,.28)}
-.setup-tools{width:min(64vh,680px,78vw);display:flex;align-items:center;gap:6px}.palette{display:grid;grid-template-columns:repeat(12,1fr);gap:4px;flex:1}.piece-btn{height:36px;padding:2px;border-radius:7px;border:1px solid var(--line);background:rgba(19,37,27,.92);display:flex;align-items:center;justify-content:center}.piece-btn.selected,.tool-btn.active{background:#2c4b2b;border-color:var(--selected);box-shadow:0 0 0 1px var(--selected)}.palette-glyph{font:27px Georgia,"Times New Roman",serif;line-height:1}.tool-btn,.action-btn,.fen-load{height:36px;padding:0 11px;border:1px solid var(--line);background:rgba(19,37,27,.92);color:var(--cream);border-radius:8px;font-size:11px;font-weight:800;white-space:nowrap}.action-row{width:min(64vh,680px,78vw);display:flex;align-items:center;gap:6px}.side-toggle{margin-left:auto;display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:rgba(19,37,27,.92)}.side-toggle button{height:36px;min-width:34px;border:0;background:transparent;color:var(--muted);font-size:11px;font-weight:850}.side-toggle button.active{background:#355733;color:#f0f4e8}.fen-row{width:min(64vh,680px,78vw);display:flex;gap:6px}.fen-row input{height:34px;flex:1;min-width:0;background:#0e1711;border:1px solid var(--line);border-radius:8px;color:var(--cream);padding:0 10px;outline:none;font-size:11px}.go-btn{width:min(230px,42vw);height:42px;border:0;border-radius:10px;background:var(--accent);color:#fff;font-size:13px;font-weight:900;letter-spacing:.16em}.go-btn:disabled{opacity:.45;cursor:not-allowed}.status-line{min-height:15px;font-size:10px;color:var(--muted);text-align:center}
-.analysis-view{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px;align-items:center;max-width:1400px;margin:0 auto}.analysis-board-wrap{display:flex;justify-content:flex-end}.analysis-board-frame{width:min(72vh,46vw,640px);aspect-ratio:1;padding:5px;border:1px solid rgba(238,242,223,.18);border-radius:12px;background:#0f2116;box-shadow:0 22px 55px rgba(0,0,0,.32)}.analysis-card{width:min(100%,700px);justify-self:start;border:1px solid rgba(238,242,223,.14);background:linear-gradient(180deg,rgba(18,39,28,.97),rgba(12,28,19,.97));border-radius:16px;padding:16px;height:min(88vh,820px);overflow:hidden;display:flex;flex-direction:column}.analysis-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}.analysis-title{display:flex;align-items:center;gap:10px}.analysis-icon{font-size:22px}.analysis-title h2{font:27px Georgia,"Times New Roman",serif;margin:0}.engine-pill{padding:6px 9px;border-radius:8px;background:#24372a;border:1px solid #53694a;color:#cbd7c2;font-size:9px;letter-spacing:.08em}.engine-pill:before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:#8eb76a;margin-right:6px}
-.filter-badge{padding:5px 8px;border-radius:7px;background:#3d3520;border:1px solid #8c7a42;color:#eadfbe;font-size:9px;letter-spacing:.08em}.best-card{background:#20382a;border:1px solid #4c6c47;border-radius:12px;padding:15px;margin-bottom:14px}.best-tag{display:inline-block;padding:4px 8px;border-radius:6px;background:#5f8b46;font-size:9px;font-weight:850;letter-spacing:.08em;text-transform:uppercase;margin-bottom:7px}.best-line{display:flex;align-items:baseline;gap:9px}.best-move{font-size:30px;font-weight:900}.eval{font-size:12px;color:#becdb8}.why{margin-top:7px;color:#dae1d6;line-height:1.45;font-size:12px}.section-heading{font-size:9px;text-transform:uppercase;letter-spacing:.15em;color:#aab7a5;margin-bottom:6px}.pv-list{flex:1;min-height:0;overflow:auto}.pv-line{display:flex;gap:10px;align-items:center;padding:7px 0;border-bottom:1px solid rgba(238,242,223,.08);font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px}.pv-move{color:#f1eee7}.filter-row{display:grid;grid-template-columns:24px 1fr auto;gap:7px;align-items:center;padding:5px 0;border-bottom:1px solid rgba(238,242,223,.08);font-size:11px}.filter-num{color:#8eaa7d;font-weight:900}.filter-hit{color:#dcebc9}.filter-miss{color:#79867a}.meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0 10px}.meta{background:#213128;border:1px solid rgba(238,242,223,.08);border-radius:9px;padding:9px}.meta .num{font-size:18px;font-weight:850}.meta small{display:block;margin-top:2px;color:#9eaa9c;font-size:9px;text-transform:uppercase}.analysis-actions{display:flex;gap:6px;margin-top:10px}.analysis-actions button{height:34px;border-radius:8px;border:1px solid var(--line);background:#172a1e;color:var(--cream);font-size:11px;font-weight:800;padding:0 11px}.status{min-height:17px;margin-top:8px;font-size:10px;color:var(--muted)}
-@media(max-width:900px){html,body{overflow:auto}.main{height:auto}.header-right{display:none}.setup-content{height:auto}.board-frame{width:min(82vw,62vh,560px)}.setup-tools,.action-row,.fen-row{width:min(82vw,560px)}.analysis-view{height:auto;grid-template-columns:1fr;padding:8px 0 18px}.analysis-board-wrap{justify-content:center}.analysis-board-frame{width:min(82vw,560px)}.analysis-card{width:100%;height:auto;min-height:520px}}
-.sq.legal-target:not(.legal-capture)::after{
-  content:"";
-  position:absolute;
-  width:22%;
-  aspect-ratio:1;
-  border-radius:50%;
-  background:rgba(20,35,20,.35);
-  z-index:3;
-  pointer-events:none;
-}
-.sq.legal-capture::after{
-  content:"";
-  position:absolute;
-  inset:5%;
-  border:5px solid rgba(20,35,20,.38);
-  border-radius:50%;
-  z-index:3;
-  pointer-events:none;
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--cream);font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+button,input{font:inherit}button{cursor:pointer}
+#app{height:100%;display:flex;flex-direction:column;padding:12px;gap:10px;max-width:1600px;margin:auto}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:42px}
+.brand{font-weight:900;letter-spacing:.18em;font-size:19px}.brand span{color:var(--accent2)}
+.subbrand{font-size:10px;letter-spacing:.16em;color:var(--muted);margin-top:2px}
+.header-right{display:flex;align-items:center;gap:8px}
+.badge{font-size:10px;letter-spacing:.1em;border:1px solid var(--line);padding:6px 9px;border-radius:20px;color:var(--muted)}
+main{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1fr);gap:12px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:15px;min-height:0;overflow:hidden}
+#setupPanel{display:flex;align-items:center;justify-content:center;padding:12px}
+.setup-layout{display:grid;grid-template-columns:minmax(280px, min(68vh,650px)) minmax(210px,300px);align-items:center;justify-content:center;gap:18px;width:100%;max-height:100%}
+.board-wrap{position:relative;width:100%;max-width:min(68vh,650px);aspect-ratio:1/1;display:flex;align-items:center;justify-content:center}
+.board{width:100%;height:100%;display:grid;grid-template-columns:repeat(8,1fr);grid-template-rows:repeat(8,1fr);border:5px solid #243a2b;border-radius:7px;overflow:hidden;box-shadow:0 12px 35px #0006;user-select:none;touch-action:none}
+.square{position:relative;display:flex;align-items:center;justify-content:center;aspect-ratio:1/1;min-width:0;min-height:0}
+.square.light{background:#e8edd8}.square.dark{background:#6d8e59}
+.square.selected{background:#b8c978!important}.square.target:after{content:"";position:absolute;width:23%;height:23%;border-radius:50%;background:#203d28a8}
+.square.capture:after{content:"";position:absolute;inset:5%;border:5px solid #203d28a8;border-radius:50%}
+.square.lastmove{box-shadow:inset 0 0 0 999px #d8c45b38}
+.piece{font-family:"Segoe UI Symbol","Noto Sans Symbols 2",serif;font-size:clamp(22px,6.5vh,58px);line-height:1;z-index:1;cursor:grab;user-select:none;filter:drop-shadow(0 1px 1px #0005)}
+.piece.white{color:#fffdf0;text-shadow:0 1px 2px #18251c,1px 0 #18251c,-1px 0 #18251c,0 -1px #18251c}
+.piece.black{color:#1c2a20;text-shadow:0 1px 1px #e4ebd9}
+.coords{position:absolute;display:flex;pointer-events:none;font-size:10px;font-weight:700;color:#f0f0df;opacity:.85}
+.coords.files{left:0;right:0;bottom:4px;justify-content:space-around}
+.coords.ranks{top:0;bottom:0;left:4px;flex-direction:column;justify-content:space-around}
+.setup-tools{display:flex;flex-direction:column;gap:10px;min-width:0}
+.section-label{font-size:10px;letter-spacing:.16em;color:var(--muted);font-weight:800}
+.tool-row{display:flex;gap:6px;flex-wrap:wrap}
+.tool-btn,.action-btn,.piece-btn{border:1px solid var(--line);background:var(--panel2);color:var(--cream);border-radius:8px;padding:8px 10px;font-size:12px}
+.tool-btn.active,.piece-btn.selected{border-color:var(--accent2);background:#29452e;color:#e8f1d9}
+.piece-palette{display:grid;grid-template-columns:repeat(4,1fr);gap:5px}
+.piece-btn{display:flex;align-items:center;justify-content:center;gap:4px;padding:5px 3px;min-width:0}
+.piece-btn .symbol{font-size:23px;line-height:1}
+.piece-btn small{font-size:9px;color:var(--muted)}
+.control-block{display:flex;flex-direction:column;gap:6px}
+.fen-row{display:flex;gap:5px}
+.fen-row input{min-width:0;flex:1;background:#0b1911;border:1px solid var(--line);border-radius:7px;color:var(--cream);padding:8px;font-size:11px}
+.action-btn.primary{background:#668b4e;border-color:#88ad6b;color:#101b12;font-weight:900;letter-spacing:.12em;padding:12px}
+.action-btn.danger{border-color:#87584e;color:#e6a69b}
+.turn-buttons{display:flex;gap:6px}
+.turn-buttons button{flex:1}
+.hint{font-size:10px;line-height:1.4;color:var(--muted)}
+#analysisPanel{display:none;grid-template-columns:minmax(250px, min(48vh,470px)) minmax(0,1fr);gap:14px;padding:12px}
+.analysis-left{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:0;gap:8px}
+.analysis-board-wrap{width:min(100%,48vh,470px);aspect-ratio:1;position:relative}
+.analysis-board-wrap .board{border-width:4px}
+.analysis-board-wrap .piece{font-size:clamp(20px,5vh,48px);cursor:default}
+.analysis-right{min-height:0;display:flex;flex-direction:column;gap:10px;overflow:auto;padding-right:3px}
+.result-card{background:#0d1c13;border:1px solid var(--line);border-radius:11px;padding:12px}
+.result-label{font-size:10px;letter-spacing:.16em;color:var(--muted);font-weight:800}
+.best-move{font-size:30px;font-weight:900;color:#e8efdb;margin-top:4px}
+.filter-name{font-size:12px;color:var(--gold);margin-top:3px}
+.why{font-size:12px;line-height:1.45;color:#c4d0bd;margin-top:7px}
+.filter-list{display:flex;flex-direction:column;gap:5px}
+.filter-row{display:grid;grid-template-columns:24px minmax(0,1fr) auto;align-items:center;gap:8px;padding:8px 9px;background:#0e1d14;border:1px solid var(--line);border-radius:8px;font-size:11px}
+.filter-num{color:var(--muted);font-weight:800}
+.filter-hit{color:#e6efda;font-weight:800}
+.filter-miss{color:#aab7a6}
+.status{font-size:10px;color:var(--muted);line-height:1.4}
+.analysis-actions{display:flex;gap:7px;flex-wrap:wrap}
+@media(max-width:760px){
+ #app{padding:7px;gap:7px}
+ .setup-layout{grid-template-columns:minmax(0,1fr);gap:10px;overflow:auto}
+ .board-wrap{width:min(100%,58vh);margin:auto}
+ .setup-tools{width:min(100%,500px);margin:auto}
+ #analysisPanel{grid-template-columns:minmax(0,1fr);grid-template-rows:auto 1fr;overflow:auto}
+ .analysis-board-wrap{width:min(100%,42vh)}
+ .analysis-right{overflow:visible}
 }
 </style>
 </head>
 <body>
-<div class="app">
-<header class="header"><div class="brand"><span class="brand-mark"><span class="brand-mouth"></span></span><span class="brand-name">ENIGMA</span><span class="brand-divider"></span><span class="version">CHESS ANALYSIS WEBPAGE</span></div><div class="header-right">Created 2026, ENIGMA Passion Project.</div></header>
-<main class="main">
-<section id="setupView" class="view setup-view"><div class="setup-content">
-<div class="board-frame"><div id="board" class="board"></div></div>
-<div class="setup-tools"><div id="palette" class="palette"></div><button id="eraser" class="tool-btn">Erase</button><span id="toolStatus" style="font-size:10px;color:var(--muted);white-space:nowrap">Drag to move pieces, click to place, eraser button to erase</span></div>
-<div class="action-row"><button id="clear" class="action-btn">Clear</button><button id="start" class="action-btn">Starting position</button><button id="flip" class="action-btn">Flip Board</button><div class="side-toggle"><button id="whiteTurn" class="active">W</button><button id="blackTurn">B</button></div></div>
-<div class="fen-row"><input id="fen" placeholder="Paste FEN…"><button id="load" class="fen-load">Load FEN</button></div>
-<button id="go" class="go-btn">GO</button><div id="setupStatus" class="status-line">Ready.</div>
-</div></section>
-<section id="analysisView" class="view analysis-view hidden" aria-hidden="true"><div class="analysis-board-wrap"><div class="analysis-board-frame"><div id="analysisBoard" class="board"></div></div></div>
-<section class="analysis-card"><div class="analysis-head"><div class="analysis-title"><div class="analysis-icon">♛</div><h2>ENIGMA Analysis</h2></div><div id="engineBadge" class="filter-badge">ANALYSING…</div></div>
-<div class="best-card"><div class="best-tag">Best Move</div><div class="best-line"><div id="best" class="best-move">—</div><div id="filterName" class="eval">—</div></div><div id="why" class="why">The filter system will test the legal moves in order.</div></div>
-<div class="section-heading">Filter sequence</div><div id="filterList" class="pv-list"></div>
-<div class="meta-grid"><div class="meta"><div id="legalCount" class="num">—</div><small>Legal moves</small></div><div class="meta"><div id="turnInfo" class="num">White</div><small>Side to move</small></div></div>
-<div class="analysis-actions"><button id="back">← Edit position</button><button id="newPosition">Starting position</button></div><div id="status" class="status">Ready.</div><div class="status" style="font-size:11px;opacity:.78;margin-top:6px">Recommendations come from ENIGMA's Chess 'Filters', using elements of a chess engine.</div>
-</section></section>
-</main></div>
+<div id="app">
+<header>
+ <div><div class="brand">ENIGMA<span>.</span></div><div class="subbrand">CHESS ANALYSIS SYSTEM</div></div>
+ <div class="header-right"><div class="badge" id="engineBadge">READY</div></div>
+</header>
+<main>
+<section class="panel" id="setupPanel">
+ <div class="setup-layout">
+  <div class="board-wrap">
+   <div class="board" id="setupBoard"></div>
+   <div class="coords files" id="setupFiles"></div>
+   <div class="coords ranks" id="setupRanks"></div>
+  </div>
+  <div class="setup-tools">
+   <div class="section-label">POSITION EDITOR</div>
+   <div class="tool-row">
+    <button class="tool-btn" id="eraser">Eraser</button>
+    <button class="tool-btn" id="clear">Clear</button>
+    <button class="tool-btn" id="start">Starting position</button>
+    <button class="tool-btn" id="flip">Flip board</button>
+   </div>
+   <div class="control-block">
+    <div class="section-label">PIECES</div>
+    <div class="piece-palette" id="palette"></div>
+   </div>
+   <div class="control-block">
+    <div class="section-label">SIDE TO MOVE</div>
+    <div class="turn-buttons">
+     <button class="tool-btn active" id="whiteTurn">White</button>
+     <button class="tool-btn" id="blackTurn">Black</button>
+    </div>
+   </div>
+   <div class="control-block">
+    <div class="section-label">FEN POSITION</div>
+    <div class="fen-row"><input id="fen" placeholder="Paste FEN here"><button class="tool-btn" id="load">Load</button></div>
+   </div>
+   <button class="action-btn primary" id="go">GO</button>
+   <div class="hint">Place pieces on the board, choose whose turn it is, then press GO to analyse the position.</div>
+  </div>
+ </div>
+</section>
+<section class="panel" id="analysisPanel">
+ <div class="analysis-left">
+  <div class="analysis-board-wrap">
+   <div class="board" id="analysisBoard"></div>
+   <div class="coords files" id="analysisFiles"></div>
+   <div class="coords ranks" id="analysisRanks"></div>
+  </div>
+  <div class="analysis-actions"><button class="tool-btn" id="back">Back to editor</button><button class="tool-btn" id="newPosition">New position</button></div>
+ </div>
+ <div class="analysis-right">
+  <div class="result-card">
+   <div class="result-label">ENIGMA RECOMMENDATION</div>
+   <div class="best-move" id="best">—</div>
+   <div class="filter-name" id="filterName">Waiting for analysis</div>
+   <div class="why" id="why">Your position will be evaluated against the ENIGMA priority filters.</div>
+  </div>
+  <div class="result-card">
+   <div class="result-label">PRIORITY FILTERS</div>
+   <div class="filter-list" id="filterList"></div>
+  </div>
+  <div class="result-card">
+   <div class="result-label">POSITION DETAILS</div>
+   <div class="status">Legal moves: <span id="legalCount">—</span> · Side to move: <span id="turnInfo">—</span></div>
+   <div class="status" id="status">Ready.</div>
+  </div>
+ </div>
+</section>
+</main>
+</div>
 <script>
-(function(){
+(()=>{
 'use strict';
+const $=id=>document.getElementById(id);
+let board=Array(64).fill(null),side='w',selectedPiece='wq',eraserMode=false,flipped=false,selectedSquare=null,selectedMoves=[],bestMove=null,lastMove=null;
 const files='abcdefgh',ranks='87654321';
 const initialFen='rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR';
 const glyph={wp:'♙',wn:'♘',wb:'♗',wr:'♖',wq:'♕',wk:'♔',bp:'♟',bn:'♞',bb:'♝',br:'♜',bq:'♛',bk:'♚'};
@@ -68,187 +161,92 @@ const values={p:1,n:3,b:3,r:5,q:9,k:100};
 const filterNames=[
  'Does any move force checkmate immediately?',
  'Does any move lead to a checkmate sequence that is a check?',
- 'Does the opponent have a checkmate? If yes, does any move avoid checkmate?',
+ 'Does the opponent have a checkmate? If yes, does any move avoid it?',
  'Does any move lead to a checkmate sequence that is not a check?',
  'Does any move allow promotion to a piece?',
- 'Does any move create a tactical opportunity (discovered attack, fork, pin, skewer or deflection)?',
- 'Does any move give a check that does not lose material?',
+ 'Does any move create a tactical opportunity?',
+ 'Does any move give a safe check?',
  'Does any move gain undefended material or defend a hanging piece?',
  'Does any move attack a piece?',
- 'Does any move castle?',
- 'Does any move develop a piece?'
+ 'Can the king castle?',
+ 'Can a piece be developed?'
 ];
-let board=[],tool=null,flipped=false,side='w',selectedSquare=null,selectedMoves=[],last=null,bestMove=null,castling='KQkq',epSquare=null;
-const $=id=>document.getElementById(id);
-const idx=(r,c)=>r*8+c, inBoard=(r,c)=>r>=0&&r<8&&c>=0&&c<8;
-function cloneBoard(b){return b.slice()}
-function colorOf(p){return p?p[0]:null}
-function typeOf(p){return p?p[1]:null}
-function parseFenBoard(part){const out=[];for(const row of part.split('/')){for(const ch of row){if(/[1-8]/.test(ch)){for(let n=0;n<+ch;n++)out.push(null)}else{const c=ch===ch.toUpperCase()?'w':'b';const t=ch.toLowerCase();if(!glyph[c+t])throw Error('Invalid piece '+ch);out.push(c+t)}}}if(out.length!==64)throw Error('Board must contain 64 squares.');return out}
-function currentFen(){let out='';for(let r=0;r<8;r++){let empty=0;for(let c=0;c<8;c++){const p=board[idx(r,c)];if(!p){empty++;continue}if(empty){out+=empty;empty=0}out+=p[0]==='w'?p[1].toUpperCase():p[1]}if(empty)out+=empty;if(r<7)out+='/'}return out+' '+side+' '+(castling||'-')+' '+(epSquare===null?'-':squareName(epSquare))+' 0 1'}
-function squareName(i){return files[i%8]+ranks[Math.floor(i/8)]}
-function parseSquare(s){return (8-Number(s[1]))*8+files.indexOf(s[0])}
-function findKing(b,color){return b.findIndex(p=>p===color+'k')}
+
+ function cloneBoard(b){return b.slice()}
+function opponent(color){return color==='w'?'b':'w'}
+function inside(r,c){return r>=0&&r<8&&c>=0&&c<8}
+function idx(r,c){return r*8+c}
+function row(sq){return Math.floor(sq/8)}
+function col(sq){return sq%8}
+function squareName(sq){return files[col(sq)]+ranks[row(sq)]}
+function parseSquare(s){if(!/^[a-h][1-8]$/.test(s))return -1;return (8-Number(s[1]))*8+files.indexOf(s[0])}
+function pieceType(p){return p?p[1]:null}
+function pieceColor(p){return p?p[0]:null}
+function fenPosition(b){
+ let out='';
+ for(let r=0;r<8;r++){
+  let empty=0;
+  for(let c=0;c<8;c++){
+   const p=b[idx(r,c)];
+   if(!p){empty++;continue}
+   if(empty){out+=empty;empty=0}
+   const ch=p[1];
+   out+=p[0]==='w'?ch.toUpperCase():ch;
+  }
+  if(empty)out+=empty;
+  if(r!==7)out+='/';
+ }
+ return out;
+}
+function loadFen(fen){
+ try{
+  const parts=fen.trim().split(/\s+/);
+  const rows=parts[0].split('/');
+  if(rows.length!==8)throw Error('FEN must contain eight rows.');
+  const next=Array(64).fill(null);
+  for(let r=0;r<8;r++){
+   let c=0;
+   for(const ch of rows[r]){
+    if(/[1-8]/.test(ch)){c+=Number(ch);continue}
+    if(!/[prnbqkPRNBQK]/.test(ch)||c>=8)throw Error('Invalid FEN piece placement.');
+    next[idx(r,c++)]=(ch===ch.toUpperCase()?'w':'b')+ch.toLowerCase();
+   }
+   if(c!==8)throw Error('Each FEN row must contain eight squares.');
+  }
+  board=next;
+  side=parts[1]==='b'?'b':'w';
+  selectedSquare=null;selectedMoves=[];lastMove=null;
+  $('whiteTurn').classList.toggle('active',side==='w');
+  $('blackTurn').classList.toggle('active',side==='b');
+  renderSetup();
+ }catch(e){alert('Invalid FEN: '+e.message)}
+}
+function startingPosition(){
+ loadFen(initialFen+' w KQkq - 0 1');
+ eraserMode=false;
+ selectedPiece='wq';
+ $('eraser').classList.remove('active');
+ document.querySelectorAll('.piece-btn').forEach(b=>b.classList.remove('selected'));
+ const q=document.querySelector('[data-piece="wq"]');
+ if(q)q.classList.add('selected');
+}
+function clearBoard(){
+ board=Array(64).fill(null);
+ selectedSquare=null;selectedMoves=[];lastMove=null;
+ renderSetup();
+}
 function isSquareAttacked(b,sq,byColor){
- const r=Math.floor(sq/8),c=sq%8;
- const pawnDir=byColor==='w'?1:-1;
- for(const dc of [-1,1]){const rr=r+pawnDir;if(inBoard(rr,c+dc)&&b[idx(rr,c+dc)]===byColor+'p')return true}
- for(const [dr,dc] of [[2,1],[2,-1],[-2,1],[-2,-1],[1,2],[1,-2],[-1,2],[-1,-2]]){const rr=r+dr,cc=c+dc;if(inBoard(rr,cc)&&b[idx(rr,cc)]===byColor+'n')return true}
- for(const [dr,dc,types] of [[1,0,'rq'],[-1,0,'rq'],[0,1,'rq'],[0,-1,'rq'],[1,1,'bq'],[1,-1,'bq'],[-1,1,'bq'],[-1,-1,'bq']]){let rr=r+dr,cc=c+dc;while(inBoard(rr,cc)){const p=b[idx(rr,cc)];if(p){if(p[0]===byColor&&types.includes(p[1]))return true;break}rr+=dr;cc+=dc}}
- for(const dr of [-1,0,1])for(const dc of [-1,0,1])if(dr||dc){const rr=r+dr,cc=c+dc;if(inBoard(rr,cc)&&b[idx(rr,cc)]===byColor+'k')return true}
- return false;
-}
-function inCheck(b,color){const k=findKing(b,color);return k<0||isSquareAttacked(b,k,color==='w'?'b':'w')}
-function makeMove(b,m){const n=cloneBoard(b);const p=n[m.from];n[m.from]=null;if(m.enPassant)n[m.captureSquare]=null;n[m.to]=m.promotion?m.color+m.promotion:p;if(m.castle){const rank=Math.floor(m.from/8);if(m.castle==='K'){n[idx(rank,7)]=null;n[idx(rank,5)]=m.color+'r'}else{n[idx(rank,0)]=null;n[idx(rank,3)]=m.color+'r'}}return n}
-
-function pseudoMoves(b,color){
-  const moves=[];
-  for(let from=0;from<64;from++){
-    const piece=b[from];
-    if(!piece||piece[0]!==color) continue;
-    const type=piece[1], r=Math.floor(from/8), c=from%8;
-    const add=(to,extra={})=>{ if(to<0||to>=64)return; const target=b[to]; if(target&&target[0]===color)return; moves.push({from,to,color,piece:type,capture:target||null,...extra}); };
-    if(type==='p'){
-      const dr=color==='w'?-1:1, start=color==='w'?6:1, promoRow=color==='w'?0:7;
-      const oneR=r+dr;
-      if(inBoard(oneR,c)&&!b[idx(oneR,c)]){
-        const to=idx(oneR,c);
-        if(oneR===promoRow){for(const pr of ['q','r','b','n'])add(to,{promotion:pr});}else add(to);
-        const twoR=r+2*dr;
-        if(r===start&&!b[idx(twoR,c)])add(idx(twoR,c));
-      }
-      for(const dc of [-1,1]){
-        const rr=r+dr,cc=c+dc;if(!inBoard(rr,cc))continue;const to=idx(rr,cc),target=b[to];
-        if(target&&target[0]!==color){
-          if(rr===promoRow){for(const pr of ['q','r','b','n'])add(to,{promotion:pr});}else add(to);
-        }else if(epSquare===to){
-          const capSq=idx(r,cc);if(b[capSq]=== (color==='w'?'bp':'wp'))add(to,{enPassant:true,capture:b[capSq],captureSquare:capSq});
-        }
-      }
-    } else if(type==='n'){
-      for(const [dr,dc] of [[2,1],[2,-1],[-2,1],[-2,-1],[1,2],[1,-2],[-1,2],[-1,-2]])if(inBoard(r+dr,c+dc))add(idx(r+dr,c+dc));
-    } else if(type==='b'||type==='r'||type==='q'){
-      const dirs=[]; if(type==='b'||type==='q')dirs.push([1,1],[1,-1],[-1,1],[-1,-1]); if(type==='r'||type==='q')dirs.push([1,0],[-1,0],[0,1],[0,-1]);
-      for(const [dr,dc] of dirs){let rr=r+dr,cc=c+dc;while(inBoard(rr,cc)){const to=idx(rr,cc);if(b[to]){if(b[to][0]!==color)add(to);break;}add(to);rr+=dr;cc+=dc;}}
-    } else if(type==='k'){
-      for(const dr of [-1,0,1])for(const dc of [-1,0,1])if(dr||dc)if(inBoard(r+dr,c+dc))add(idx(r+dr,c+dc));
-      const enemy=color==='w'?'b':'w';
-      if(!inCheck(b,color)) {
-        const rank=color==='w'?7:0;
-        if((color==='w'?castling.includes('K'):castling.includes('k')) && b[idx(rank,5)]===null && b[idx(rank,6)]===null && b[idx(rank,7)]===color+'r' && !isSquareAttacked(b,idx(rank,5),enemy) && !isSquareAttacked(b,idx(rank,6),enemy)) add(idx(rank,6),{castle:'K'});
-        if((color==='w'?castling.includes('Q'):castling.includes('q')) && b[idx(rank,1)]===null && b[idx(rank,2)]===null && b[idx(rank,3)]===null && b[idx(rank,0)]===color+'r' && !isSquareAttacked(b,idx(rank,3),enemy) && !isSquareAttacked(b,idx(rank,2),enemy)) add(idx(rank,2),{castle:'Q'});
-      }
-    }
-  }
-  return moves;
-}
-
-function applyStateMove(m){
-  const p=board[m.from];
-  if(p==='wk')castling=castling.replace('K','').replace('Q','');
-  if(p==='bk')castling=castling.replace('k','').replace('q','');
-  if(p==='wr'&&m.from===63)castling=castling.replace('K','');
-  if(p==='wr'&&m.from===56)castling=castling.replace('Q','');
-  if(p==='br'&&m.from===7)castling=castling.replace('k','');
-  if(p==='br'&&m.from===0)castling=castling.replace('q','');
-  if(m.capture&&m.to===63)castling=castling.replace('K','');
-  if(m.capture&&m.to===56)castling=castling.replace('Q','');
-  if(m.capture&&m.to===7)castling=castling.replace('k','');
-  if(m.capture&&m.to===0)castling=castling.replace('q','');
-  epSquare=null;
-  if(p&&p[1]==='p'&&Math.abs(m.to-m.from)===16)epSquare=(m.to+m.from)/2;
-}
-function legalMoves(b,color){return pseudoMoves(b,color).filter(m=>!inCheck(makeMove(b,m),color))}
-function isCheckmate(b,color){return inCheck(b,color)&&legalMoves(b,color).length===0}
-function isStalemate(b,color){return !inCheck(b,color)&&legalMoves(b,color).length===0}
-function material(b,color){let n=0;for(const p of b)if(p&&p[0]===color&&p[1]!=='k')n+=values[p[1]];return n}
-function defendedBy(b,sq,color){return isSquareAttacked(b,sq,color)}
-function attackedAfterMove(b,m,color){return isSquareAttacked(b,m.to,color==='w'?'b':'w')}
-function moveGivesCheck(b,m){return inCheck(makeMove(b,m),m.color==='w'?'b':'w')}
-function moveLosesMaterial(b,m){const before=material(b,m.color);const after=material(makeMove(b,m),m.color);return after<before}
-
-function moveSafety(b,m){
- // Estimate whether the moved piece is left hanging after the move.
- // This is a lightweight tactical heuristic, not a full exchange evaluation.
- const after=makeMove(b,m);
- const color=m.color, opp=color==='w'?'b':'w';
- const piece=after[m.to];
- if(!piece) return {safe:false, attacked:false, defended:false, reason:'No piece on destination'};
- // A legal move should not leave the king in check; king safety is handled by legalMoves().
- if(piece[1]==='k') return {safe:!inCheck(after,color), attacked:false, defended:false, reason:'King move'};
- const attacked=isSquareAttacked(after,m.to,opp);
- const defended=isSquareAttacked(after,m.to,color);
- // If the piece is attacked but undefended, consider it unsafe.
- // If defended, this simple check treats it as reasonably safe; it does not
- // calculate the full sequence of captures or compare every attacker/defender.
- const safe=!attacked||defended;
- return {safe,attacked,defended,reason:safe?'Not left undefended':'Attacked and undefended'};
-}
-function hasUndefendedGain(b,m){
- const target=b[m.to];
- if(target&&target[0]!==m.color&&typeOf(target)!=='k'){const enemy=target[0];const targetVal=values[target[1]];const nb=makeMove(b,m);const targetSq=m.to;const defended=isSquareAttacked(b,targetSq,enemy);return !defended||values[m.piece]<targetVal}
- // Also detect a move that wins another hanging enemy piece by attacking it with a defended piece.
- const nb=makeMove(b,m);for(let sq=0;sq<64;sq++){const p=nb[sq];if(p&&p[0]!==m.color&&p[1]!=='k'&&!isSquareAttacked(nb,sq,p[0]))return true}
- return false;
-}
-function defendsHanging(b,m){
- const before=b, after=makeMove(b,m), color=m.color, opp=color==='w'?'b':'w';
- for(let sq=0;sq<64;sq++){
-  const p=before[sq], q=after[sq];
-  if(p&&p[0]===color&&p[1]!=='k'&&q===p){
-   const wasAttacked=isSquareAttacked(before,sq,opp);
-   const nowDefended=isSquareAttacked(after,sq,color);
-   const stillAttacked=isSquareAttacked(after,sq,opp);
-   if(wasAttacked && nowDefended && stillAttacked)return true;
-  }
+ for(let from=0;from<64;from++){
+  const p=b[from];
+  if(!p||p[0]!==byColor)continue;
+  if(pieceAttacksSquare(b,from,sq))return true;
  }
  return false;
 }
-function attacksAPiece(b,m){
- if(m.capture)return false;
- const before=b, after=makeMove(b,m), opp=m.color==='w'?'b':'w';
- for(let sq=0;sq<64;sq++){const p=after[sq];if(p&&p[0]===opp&&p[1]!=='k'&&isSquareAttacked(after,sq,m.color)&&!isSquareAttacked(before,sq,m.color))return true}
- return false;
-}
-function developsPiece(b,m){
- const p=b[m.from];if(!p||!['n','b'].includes(p[1]))return false;
- const home=m.color==='w'?7:0;const backSquares=[idx(home,1),idx(home,2),idx(home,5),idx(home,6)];
- if(!backSquares.includes(m.from))return false;
- return !backSquares.includes(m.to);
-}
-function san(m,b){if(m.castle)return m.castle==='K'?'O-O':'O-O-O';const t=m.piece==='p'?'':m.piece.toUpperCase();const cap=m.capture?'x':' ';let s=t+(cap==='x'?'x':'')+squareName(m.to);if(m.promotion)s+='='+m.promotion.toUpperCase();return s}
-function opponentHasMateThreat(b,color){const opp=color==='w'?'b':'w';for(const m of legalMoves(b,opp)){if(isCheckmate(makeMove(b,m),color))return true}return false}
-function opponentHasMateThreatAfter(b,color){return opponentHasMateThreat(b,color)}
-function hasMateInOne(b,color){
- const ms=legalMoves(b,color);
- return ms.some(m=>isCheckmate(makeMove(b,m),color==='w'?'b':'w'));
-}
-function matingRepliesAfter(b,move,color){
- const after=makeMove(b,move),opp=color==='w'?'b':'w';
- const replies=legalMoves(after,opp);
- if(!replies.length)return false;
- // A move qualifies when every legal reply allows an immediate mate on the next move.
- return replies.every(reply=>{
-  const afterReply=makeMove(after,reply);
-  const myReplies=legalMoves(afterReply,color);
-  return myReplies.some(fin=>isCheckmate(makeMove(afterReply,fin),opp));
- });
-}
-function opponentMateThreat(b,color){
- const opp=color==='w'?'b':'w';
- return hasMateInOne(b,opp);
-}
-function avoidsMateThreat(b,m,color){
- const after=makeMove(b,m),opp=color==='w'?'b':'w';
- return !hasMateInOne(after,opp);
-}
-
-// Tactical-pattern detector. This is a practical pattern heuristic, not a
-// complete chess theorem prover: it looks for forks, discovered attacks,
-// pins/skewers and simple deflection opportunities after a candidate move.
 function pieceAttacksSquare(b,from,to){
- const p=b[from]; if(!p)return false;
- const color=p[0], type=p[1], fr=Math.floor(from/8),fc=from%8,tr=Math.floor(to/8),tc=to%8;
+ const p=b[from];if(!p)return false;
+ const type=p[1],color=p[0];
+ const fr=row(from),fc=col(from),tr=row(to),tc=col(to);
  const dr=tr-fr,dc=tc-fc,adr=Math.abs(dr),adc=Math.abs(dc);
  if(from===to)return false;
  if(type==='p')return dr===(color==='w'?-1:1)&&adc===1;
@@ -266,649 +264,565 @@ function pieceAttacksSquare(b,from,to){
 }
 function attacksFrom(b,from){
  const p=b[from];if(!p)return [];
- const out=[];for(let to=0;to<64;to++)if(to!==from&&pieceAttacksSquare(b,from,to))out.push(to);
+ const out=[];
+ for(let to=0;to<64;to++)if(to!==from&&pieceAttacksSquare(b,from,to))out.push(to);
  return out;
 }
-function sliderLineTargets(b,from,color){
- const p=b[from];if(!p||p[0]!==color||!['b','r','q'].includes(p[1]))return [];
- return attacksFrom(b,from).filter(sq=>b[sq]&&b[sq][0]!==color);
+function findKing(b,color){return b.findIndex(p=>p===color+'k')}
+function inCheck(b,color){
+ const king=findKing(b,color);
+ return king<0||isSquareAttacked(b,king,opponent(color));
 }
-function createsTactic(b,m){
- const after=makeMove(b,m);
- const color=m.color;
- const opp=color==='w'?'b':'w';
- const moved=after[m.to];
-
- if(!moved)return false;
-
- // Checks whether a square lies strictly between two other squares
- // on a straight rank, file or diagonal.
- function liesBetween(a,middle,z){
-  const ar=Math.floor(a/8),ac=a%8;
-  const mr=Math.floor(middle/8),mc=middle%8;
-  const zr=Math.floor(z/8),zc=z%8;
-  const dr=zr-ar,dc=zc-ac;
-
-  if(!(dr===0||dc===0||Math.abs(dr)===Math.abs(dc)))return false;
-
-  const sr=Math.sign(dr),sc=Math.sign(dc);
-  let r=ar+sr,c=ac+sc;
-
-  while(r!==zr||c!==zc){
-   if(r===mr&&c===mc)return true;
-   r+=sr;
-   c+=sc;
-  }
-  return false;
- }
-
- // 1. Fork: the moved piece must newly attack at least two
- // enemy targets. At least one must be worth three points or more.
- const forkTargets=[];
-
- for(let sq=0;sq<64;sq++){
-  const p=after[sq];
-
-  if(!p||p[0]!==opp||sq===m.to)continue;
-
-  const newlyAttacked=
-   pieceAttacksSquare(after,m.to,sq)&&
-   !pieceAttacksSquare(b,m.from,sq);
-
-  if(newlyAttacked){
-   forkTargets.push(p);
-  }
- }
-
- const valuableForkTargets=forkTargets.filter(p=>
-  p[1]!=='k'&&(values[p[1]]||0)>=3
- );
-
- if(forkTargets.length>=2&&valuableForkTargets.length>=1){
-  return true;
- }
-
- // 2. Discovered attack: moving the piece must actually uncover
- // a friendly bishop, rook or queen attacking an enemy target.
+function pseudoMoves(b,color){
+ const moves=[];
  for(let from=0;from<64;from++){
-  const p=after[from];
-
-  if(!p||p[0]!==color||!['b','r','q'].includes(p[1]))continue;
-  if(from===m.to)continue;
-
-  for(let sq=0;sq<64;sq++){
-   const target=after[sq];
-
-   if(!target||target[0]!==opp||target[1]==='k')continue;
-
-   const newlyRevealed=
-    pieceAttacksSquare(after,from,sq)&&
-    !pieceAttacksSquare(b,from,sq)&&
-    liesBetween(from,m.from,sq);
-
-   if(newlyRevealed&&(values[target[1]]||0)>=3){
-    return true;
-   }
-  }
- }
-
- // 3. Pin or skewer: a move must uncover a new line through
- // two enemy pieces, with the more valuable piece behind.
- for(let from=0;from<64;from++){
-  const p=after[from];
-
-  if(!p||p[0]!==color||!['b','r','q'].includes(p[1]))continue;
-  if(from===m.to)continue;
-
-  const fr=Math.floor(from/8);
-  const fc=from%8;
-
-  const dirs=p[1]==='b'
-   ?[[1,1],[1,-1],[-1,1],[-1,-1]]
-   :p[1]==='r'
-    ?[[1,0],[-1,0],[0,1],[0,-1]]
-    :[[1,1],[1,-1],[-1,1],[-1,-1],[1,0],[-1,0],[0,1],[0,-1]];
-
-  for(const [dr,dc] of dirs){
-   let r=fr+dr,c=fc+dc;
-   let first=null,firstSq=null;
-
-   while(inBoard(r,c)){
-    const sq=idx(r,c);
-    const q=after[sq];
-
-    if(q){
-     if(!first){
-      if(q[0]===color)break;
-      first=q;
-      firstSq=sq;
-     }else{
-      if(
-       q[0]===opp&&
-       first[0]===opp&&
-       (q[1]==='k'||
-        (values[q[1]]||0)>(values[first[1]]||0))&&
-       liesBetween(from,m.from,sq)
-      ){
-       return true;
-      }
-      break;
-     }
+  const p=b[from];if(!p||p[0]!==color)continue;
+  const type=p[1],r=row(from),c=col(from);
+  const add=(to,promotion=null)=>moves.push({from,to,promotion});
+  if(type==='p'){
+   const dir=color==='w'?-1:1,start=color==='w'?6:1,last=color==='w'?0:7;
+   const nr=r+dir;
+   if(inside(nr,c)&&!b[idx(nr,c)]){
+    if(nr===last){for(const promo of ['q','r','b','n'])add(idx(nr,c),promo)}
+    else{
+     add(idx(nr,c));
+     const nr2=r+2*dir;
+     if(r===start&&!b[idx(nr2,c)])add(idx(nr2,c));
     }
-
-    r+=dr;
-    c+=dc;
    }
-  }
- }
-
- // 4. Deflection: the move must capture or newly attack an enemy
- // piece that was defending a more valuable enemy piece.
- for(let defenderSq=0;defenderSq<64;defenderSq++){
-  const defender=b[defenderSq];
-
-  if(!defender||defender[0]!==opp||defender[1]==='k')continue;
-
-  for(let protectedSq=0;protectedSq<64;protectedSq++){
-   const protectedPiece=b[protectedSq];
-
-   if(
-    !protectedPiece||
-    protectedPiece[0]!==opp||
-    protectedSq===defenderSq||
-    (values[protectedPiece[1]]||0)<=(values[defender[1]]||0)
-   )continue;
-
-   // Confirm this particular enemy piece was defending the target.
-   if(!pieceAttacksSquare(b,defenderSq,protectedSq))continue;
-
-   // The defender was captured by the move.
-   if(m.to===defenderSq&&m.capture){
-    return true;
-   }
-
-   // Or the moved piece has newly attacked the defender.
-   if(
-    after[defenderSq]&&
-    pieceAttacksSquare(after,m.to,defenderSq)&&
-    !pieceAttacksSquare(b,m.from,defenderSq)
-   ){
-    return true;
-   }
-  }
- }
-
- return false;
-}
-
-function filterMoves(b,color,moves){
- const results=[];
- // 1. Immediate checkmate.
- results.push(moves.filter(m=>isCheckmate(makeMove(b,m),color==='w'?'b':'w')));
- // 2. A checking move that starts a forced mating sequence (mate after every legal reply).
- results.push(moves.filter(m=>moveGivesCheck(b,m)&&matingRepliesAfter(b,m,color)));
- // 3. Opponent currently threatens mate in one; candidate prevents it.
- const threat=opponentMateThreat(b,color);
- results.push(threat?moves.filter(m=>avoidsMateThreat(b,m,color)):[]);
- // 4. A non-checking move that creates a forced mating sequence.
- results.push(moves.filter(m=>!moveGivesCheck(b,m)&&matingRepliesAfter(b,m,color)));
- // 5. Promotion.
- results.push(moves.filter(m=>!!m.promotion));
- // 6. Tactical opportunity: recognised board-pattern heuristics.
- results.push(moves.filter(m=>createsTactic(b,m)));
- // 7. Check without losing material, with a basic safety check.
- results.push(moves.filter(m=>moveGivesCheck(b,m)&&!moveLosesMaterial(b,m)&&moveSafety(b,m).safe));
- // 8. Gain undefended material or defend a hanging piece.
- results.push(moves.filter(m=>hasUndefendedGain(b,m)||defendsHanging(b,m)));
- // 9. Newly attacks an opponent piece.
- results.push(moves.filter(m=>attacksAPiece(b,m)));
- // 10. Castling.
- results.push(moves.filter(m=>!!m.castle));
- // 11. Develop a knight or bishop.
- results.push(moves.filter(m=>developsPiece(b,m)));
- return {results,threat};
-}
-function materialDelta(b,m){
- const color=m.color,opp=color==='w'?'b':'w';
- const before=material(b,color)-material(b,opp);
- const afterBoard=makeMove(b,m);
- const after=material(afterBoard,color)-material(afterBoard,opp);
- return after-before;
-}
-function tieBreak(candidates,b,filterIndex){
- const score=m=>{
-  const delta=materialDelta(b,m),captureValue=m.capture?(values[typeOf(m.capture)]||0):0;
-  const safety=moveSafety(b,m).safe?1:0;
-  const promotion=m.promotion?({q:9,r:5,b:3,n:3}[m.promotion]||0):0;
-  const check=moveGivesCheck(b,m)?1:0;
-  const attackedValue=(()=>{const nb=makeMove(b,m);let v=0;for(let i=0;i<64;i++){const p=nb[i];if(p&&p[0]!==m.color&&p[1]!=='k'&&isSquareAttacked(nb,i,m.color))v=Math.max(v,values[p[1]]||0)}return v})();
-  if(filterIndex===0)return check*100000+captureValue*100+delta*10+safety;
-  if(filterIndex===1||filterIndex===3)return check*100000+safety*10+delta;
-  if(filterIndex===4)return promotion*100+safety*10+delta;
-  if(filterIndex===5)return safety*100+attackedValue*20+delta*10;
-  if(filterIndex===6)return safety*100+delta*10+check;
-  if(filterIndex===7)return captureValue*100+delta*20+safety*5;
-  if(filterIndex===8)return attackedValue*20+safety*5+delta;
-  return safety*10+delta+check;
- };
- return candidates.slice().sort((a,bm)=>score(bm)-score(a)||uciMove(a).localeCompare(uciMove(bm)))[0]||null;
-}
-function chooseBest(b,color){
- const moves=legalMoves(b,color),{results,threat}=filterMoves(b,color,moves);
- let hit=-1,candidate=null;
- for(let i=0;i<results.length;i++){if(results[i].length){hit=i;candidate=tieBreak(results[i],b,i);break}}
- return {moves,results,hit,candidate,threat};
-}
-function squareMarkup(containerId){const b=$(containerId);b.innerHTML='';for(let i=0;i<64;i++){const d=document.createElement('div');d.className='sq '+(((Math.floor(i/8)+i%8)%2===0)?'light':'dark');b.appendChild(d)}}
-function renderInto(containerId){
- const b=$(containerId),cells=[...b.children];
- for(let i=0;i<64;i++){
-  const idx2=flipped?63-i:i,d=cells[i];
-  d.dataset.index=String(idx2);
-  d.className='sq '+(((Math.floor(idx2/8)+idx2%8)%2===0)?'light':'dark');
-  if(last&&(idx2===last.from||idx2===last.to))d.classList.add('last');
-  if(bestMove&&(idx2===bestMove.from||idx2===bestMove.to))d.classList.add('best');
-  d.innerHTML='';
-  const p=board[idx2];
-  if(p){
-   const s=document.createElement('span');
-   s.className='piece '+(p[0]==='w'?'white-piece':'black-piece');
-   s.textContent=glyph[p];
-   d.appendChild(s);
-  }
-  if(i%8===0){
-   const r=document.createElement('span');
-   r.className='coord rank';
-   r.textContent=ranks[Math.floor(idx2/8)];
-   d.appendChild(r);
-  }
-  if(Math.floor(i/8)===7){
-   const f=document.createElement('span');
-   f.className='coord file';
-   f.textContent=files[idx2%8];
-   d.appendChild(f);
-  }
-  if(selectedSquare===idx2)d.classList.add('click-selected');
-  const legalTarget=selectedMoves.some(m=>m.to===idx2);
-  if(legalTarget){
-   d.classList.add('legal-target');
-   if(board[idx2])d.classList.add('legal-capture');
-  }
- }
-}
-function renderSetup(){renderInto('board');$('setupStatus').textContent='Ready.'}
-function renderAnalysis(){renderInto('analysisBoard')}
-function clearTools(){
- tool=null;
- selectedSquare=null;
- selectedMoves=[];
- document.querySelectorAll('.piece-btn,.tool-btn').forEach(x=>x.classList.remove('selected','active'));
- $('toolStatus').textContent='Move / place pieces';
-}
-function paletteInit(){
- const p=$('palette');
-
- palette.forEach(([k,name])=>{
-  const b=document.createElement('button');
-  b.className='piece-btn';
-  b.title=(k[0]==='w'?'White ':'Black ')+name;
-
-  const s=document.createElement('span');
-  s.className='palette-glyph '+(k[0]==='w'?'white-piece':'black-piece');
-  s.textContent=glyph[k];
-
-  b.appendChild(s);
-
-  b.onclick=()=>{
-   if(tool===k){
-    tool=null;
-    $('toolStatus').textContent='No piece selected';
-    b.classList.remove('selected');
-   }else{
-    tool=k;
-    selectedSquare=null;
-    selectedMoves=[];
-    $('toolStatus').textContent=(k[0]==='w'?'White ':'Black ')+name;
-
-    document.querySelectorAll('.piece-btn,.tool-btn')
-      .forEach(x=>x.classList.remove('selected','active'));
-
-    b.classList.add('selected');
-   }
-  };
-
-  p.appendChild(b);
- });
-}
-
-  
-function bindBoard(id){
- const b=$(id);
- let dragFrom=null, suppressClick=false, lastPieceTap=null;
-
- b.addEventListener('click',e=>{
-  if(suppressClick){
-   suppressClick=false;
-   return;
-  }
-
-  const sq=e.target.closest('.sq');
-  if(!sq)return;
-  const i=Number(sq.dataset.index);
-
-  // Preserve the existing double-click deletion feature.
-  const now=Date.now();
-  if(!tool && board[i] && lastPieceTap && lastPieceTap.square===i && now-lastPieceTap.time<=420){
-   board[i]=null;
-   selectedSquare=null;
-   selectedMoves=[];
-   last=null;
-   lastPieceTap=null;
-   renderSetup();
-   return;
-  }
-
-  lastPieceTap=(!tool && board[i])?{square:i,time:now}:null;
-
-  if(tool==='erase'){
-   board[i]=null;
-   selectedSquare=null;
-   selectedMoves=[];
-   last=null;
-   lastPieceTap=null;
-   renderSetup();
-   return;
-  }
-
-  if(tool){
-   board[i]=tool;
-   selectedSquare=null;
-   selectedMoves=[];
-   last=null;
-   renderSetup();
-   return;
-  }
-
-  // If a piece is already selected, check whether this is a legal destination.
-  if(selectedSquare!==null){
-   const move=selectedMoves.find(m=>m.to===i&&(!m.promotion||m.promotion==='q'));
-
-   if(move){
-    applyStateMove(move);
-    board=makeMove(board,move);
-    side=side==='w'?'b':'w';
-    last={from:move.from,to:move.to};
-    selectedSquare=null;
-    selectedMoves=[];
-    $('whiteTurn').classList.toggle('active',side==='w');
-    $('blackTurn').classList.toggle('active',side==='b');
-    renderSetup();
-    return;
-   }
-
-   // Clicking the selected piece again deselects it.
-   if(i===selectedSquare){
-    selectedSquare=null;
-    selectedMoves=[];
-    renderSetup();
-    return;
-   }
-
-   // Clicking another friendly piece selects that piece instead.
-   if(board[i]&&board[i][0]===side){
-    selectedSquare=i;
-    selectedMoves=legalMoves(board,side).filter(m=>m.from===i);
-    renderSetup();
-    return;
-   }
-
-   // Clicking an invalid destination cancels the selection.
-   selectedSquare=null;
-   selectedMoves=[];
-   renderSetup();
-   return;
-  }
-
-  // Select a piece belonging to the side whose turn it is.
-  if(board[i]&&board[i][0]===side){
-   selectedSquare=i;
-   selectedMoves=legalMoves(board,side).filter(m=>m.from===i);
-   renderSetup();
-  }
- });
-
- b.addEventListener('pointerdown',e=>{
-  if(e.button!==0)return;
-
-  const sq=e.target.closest('.sq');
-  if(!sq)return;
-
-  const i=Number(sq.dataset.index);
-
-  if(tool==='erase'){
-   board[i]=null;
-   selectedSquare=null;
-   selectedMoves=[];
-   last=null;
-   lastPieceTap=null;
-   renderSetup();
-   return;
-  }
-
-  if(tool)return;
-
-  if(board[i]){
-   dragFrom=i;
-   sq.setPointerCapture?.(e.pointerId);
-  }
- });
-
- b.addEventListener('pointerup',e=>{
-  if(dragFrom===null)return;
-
-  const from=dragFrom;
-  dragFrom=null;
-
-  const hit=document.elementFromPoint(e.clientX,e.clientY)?.closest?.('.sq');
-
-  // Releasing on the original square allows the normal click event to select it.
-  if(hit&&Number(hit.dataset.index)===from)return;
-
-  if(hit&&hit.closest('.board')){
-   const to=Number(hit.dataset.index);
-
-   if(to!==from&&board[from]){
-    const m={
-     from,
-     to,
-     color:side,
-     piece:board[from][1],
-     capture:board[to]||null
-    };
-
-    board[to]=board[from];
-    board[from]=null;
-    applyStateMove(m);
-    selectedSquare=null;
-    selectedMoves=[];
-    last={from,to};
-    suppressClick=true;
-    renderSetup();
-    return;
-   }
-  }
-
-  suppressClick=true;
- });
-
- b.addEventListener('pointercancel',()=>{
-  dragFrom=null;
- });
-
- b.addEventListener('contextmenu',e=>{
-  e.preventDefault();
-  const sq=e.target.closest('.sq');
-  if(!sq)return;
-
-  const i=Number(sq.dataset.index);
-  board[i]=null;
-  selectedSquare=null;
-  selectedMoves=[];
-  last=null;
-  renderSetup();
- });
-}
-
-function startingPosition(){board=parseFenBoard(initialFen);side='w';castling='KQkq';epSquare=null;flipped=false;last=null;bestMove=null;clearTools();$('whiteTurn').classList.add('active');$('blackTurn').classList.remove('active');$('analysisView').classList.add('hidden');$('analysisView').setAttribute('aria-hidden','true');$('setupView').classList.remove('hidden');$('fen').value='';renderSetup();$('setupStatus').textContent='Starting position loaded. Standard chess position ready.';$('status').textContent='Starting position loaded.';}
-function clearBoard(){board=Array(64).fill(null);last=null;bestMove=null;clearTools();renderSetup();$('setupStatus').textContent='Position cleared.'}
-function loadFen(f){try{const a=f.trim().split(/\s+/);if(a.length<2)throw Error('Paste a valid FEN.');board=parseFenBoard(a[0]);side=a[1]==='b'?'b':'w';castling=a[2]&&a[2]!=='-'?a[2]:'-';epSquare=a[3]&&a[3]!=='-'?parseSquare(a[3]):null;last=null;bestMove=null;selectedSquare=null;selectedMoves=[];$('whiteTurn').classList.toggle('active',side==='w');$('blackTurn').classList.toggle('active',side==='b');renderSetup();$('setupStatus').textContent='FEN loaded.'}catch(e){$('setupStatus').textContent='Invalid FEN: '+e.message}}
-function filterWhy(hit){return hit<0?'None of the eleven filters found a matching move. The position has no move selected by this rule-set.':'Filter '+(hit+1)+' matched first: '+filterNames[hit]+'.'}
-function showResults(result,engineMoves=[],engineStatus=''){
- const filterCandidate=result.candidate;
- const engineBest=engineMoves.length?parseUciMove(engineMoves[0].uci,result.moves):null;
- const chosen=engineBest||filterCandidate;
- bestMove=chosen;
- if(chosen){
-  $('best').textContent=san(chosen,board);
-  $('filconst chosenFilter = result.results.findIndex(moves =>
-  moves.some(m => uciMove(m) === uciMove(chosen))
-);
-
-$('filterName').textContent = chosenFilter >= 0
-  ? 'Filter ' + (chosenFilter + 1)
-  : 'No matching filter';
-  if(engineBest){
-   if(filterCandidate&&uciMove(filterCandidate)===uciMove(engineBest)){
-    $('why').textContent='ENIGMA engine selected this move as it satisfied Filter '+(result.hit+1)+'.';
-   }else if(filterCandidate){
-    $('why').textContent='ENIGMA engine selected this move. Without basic chess logic, it would have selected ' +san(filterCandidate,board)+' (Filter '+(result.hit+1)+'). This is because without logic, the way chess engines work is that it selects the first generated move that satisfies a filter, which may not be the best one.';
-   }else{
-    $('why').textContent='ENIGMA engine selected this move.';
+   for(const dc of [-1,1]){
+    const nc=c+dc;
+    if(!inside(nr,nc))continue;
+    const target=b[idx(nr,nc)];
+    if(target&&target[0]!==color){
+     if(nr===last){for(const promo of ['q','r','b','n'])add(idx(nr,nc),promo)}
+     else add(idx(nr,nc));
+    }
    }
   }else{
-   $('why').textContent='Logic unavailable; provided move may be incorrect.';
+   for(let to=0;to<64;to++){
+    if(to===from)continue;
+    const target=b[to];
+    if(target&&target[0]===color)continue;
+    if(pieceAttacksSquare(b,from,to))add(to);
+   }
   }
- }else{
-  $('best').textContent='—';$('filterName').textContent='No legal move';$('why').textContent='No legal moves were returned. Check that the position is legal and both kings are present.';
  }
- $('legalCount').textContent=String(result.moves.length);
- $('turnInfo').textContent=side==='w'?'White':'Black';
- const list=$('filterList');list.innerHTML='';
- for(let i=0;i<11;i++){
-  const row=document.createElement('div');row.className='filter-row';
-  const n=document.createElement('div');n.className='filter-num';n.textContent=String(i+1);
-  const text=document.createElement('div');text.className=i===result.hit?'filter-hit':'filter-miss';text.textContent=filterNames[i];
-  const count=document.createElement('div');count.style.color=i===result.hit?'#d9c889':'#728071';
-  count.textContent=(result.results[i]||[]).length+' move'+((result.results[i]||[]).length===1?'':'s');
-  row.append(n,text,count);list.appendChild(row);
- }
- const top=engineMoves.slice(0,3).map((x,i)=>(i+1)+'. '+x.uci).join('   ');
- $('status').textContent=(engineBest?'Engine analysis completed. ':'Engine analysis did not return a usable move. ')+(top?'Top engine moves: '+top+'. ':'')+engineStatus;
- $('engineBadge').textContent=engineBest?'ENIGMA FILTERS':'LOGIC UNAVAILABLE';
- $('engineBadge').style.background=engineBest?'#203d28':'#4a2925';
- $('engineBadge').style.borderColor=engineBest?'#638451':'#9a5c50';
- renderAnalysis();
+ return moves;
+}
+function applyMove(b,m){
+ const next=cloneBoard(b),p=next[m.from];
+ next[m.from]=null;
+ next[m.to]=m.promotion?p[0]+m.promotion:p;
+ return next;
+}
+function legalMoves(b,color){
+ return pseudoMoves(b,color).filter(m=>{
+  const next=applyMove(b,m);
+  return !inCheck(next,color);
+ });
+}
+function san(m,b){
+ const p=b[m.from];if(!p)return '';
+ const type=p[1].toUpperCase();
+ const capture=!!b[m.to];
+ let out=type==='P'?'':type;
+ if(capture)out+=type==='P'?files[col(m.from)]+'x':'x';
+ out+=squareName(m.to);
+ if(m.promotion)out+='='+m.promotion.toUpperCase();
+ const next=applyMove(b,m);
+ if(inCheck(next,opponent(p[0])))out+='+';
+ return out;
 }
 function uciMove(m){return squareName(m.from)+squareName(m.to)+(m.promotion||'')}
 function parseUciMove(uci,moves){
- if(!uci||uci==='(none)'||uci==='0000')return null;
- uci=uci.toLowerCase();
- const known=moves.find(m=>uciMove(m)===uci);
- if(known)return known;
- // Trust Stockfish's legal UCI result even if ENIGMA's lightweight move generator missed it.
- if(!/^[a-h][1-8][a-h][1-8][qrbn]?$/.test(uci))return null;
- const from=parseSquare(uci.slice(0,2)),to=parseSquare(uci.slice(2,4)),piece=board[from];
- if(!piece||piece[0]!==side)return null;
- const m={from,to,color:side,piece:piece[1],capture:board[to]||null};
- if(uci.length===5)m.promotion=uci[4];
- if(piece[1]==='k'&&Math.abs((from%8)-(to%8))===2)m.castle=to%8>from%8?'K':'Q';
- if(piece[1]==='p'&&epSquare===to&&!board[to]&&(from%8)!==(to%8)){
-  m.enPassant=true;m.captureSquare=from<to?to-8:to+8;m.capture=board[m.captureSquare]||null;
- }
- return m;
+ if(!uci)return null;
+ const from=parseSquare(uci.slice(0,2)),to=parseSquare(uci.slice(2,4)),promotion=uci[4]||null;
+ return moves.find(m=>m.from===from&&m.to===to&&(m.promotion||null)===promotion)||null;
 }
-let sfWorker=null,sfReady=false,sfInitPromise=null,sfSearchTimer=null,sfSearchResolve=null,sfSearchBuffer='',sfLastError='';
-function startStockfish(){
- if(sfInitPromise)return sfInitPromise;
- sfInitPromise=new Promise((resolve,reject)=>{
-  let settled=false;
-  const timeout=setTimeout(()=>{if(!settled){settled=true;sfLastError='The chess engine did not become ready. Check that its JavaScript and WASM files are beside index.html.';reject(Error(sfLastError));}},12000);
-  try{
-   sfWorker=new Worker(new URL('./engine/stockfish-18-lite-single.js', document.baseURI));
-   sfWorker.onmessage=e=>{
-    const line=String(e.data||'').trim();
-    if(line==='uciok'){sfWorker.postMessage('isready');return;}
-    if(line==='readyok'){
-     sfReady=true;
-     if(!settled){settled=true;clearTimeout(timeout);resolve();}
-     return;
-    }
-    if(line.startsWith('bestmove ')){
-     if(sfSearchTimer){clearTimeout(sfSearchTimer);sfSearchTimer=null;}
-     const best=line.split(/\s+/)[1];
-     const byRank=new Map();
-     for(const ln of sfSearchBuffer.split(/\r?\n/)){
-      if(!ln.startsWith('info '))continue;
-      const pvMatch=ln.match(/\bpv\s+([a-h][1-8][a-h][1-8][qrbn]?)/i);
-      if(!pvMatch)continue;
-      const rankMatch=ln.match(/\bmultipv\s+(\d+)/i);
-      const rank=rankMatch?Number(rankMatch[1]):1;
-      if(!byRank.has(rank))byRank.set(rank,pvMatch[1].toLowerCase());
-     }
-     if(best&&best!=='(none)'&&best!=='0000')byRank.set(1,best.toLowerCase());
-     const moves=[...byRank.entries()].sort((a,b)=>a[0]-b[0]).map(([rank,uci])=>({rank,uci})).slice(0,3);
-     const done=sfSearchResolve;sfSearchResolve=null;
-     if(done)done({moves,status:'Filter search finished.'});
-     return;
-    }
-    if(sfSearchResolve)sfSearchBuffer+=line+'\n';
-   };
-   sfWorker.onerror=()=>{
-    sfLastError='The chess engine failed to load. Check that its JavaScript and WASM files are beside index.html, then reload the page. Check the browser Console/Network tab for a 404 or WASM error.';
-    if(!settled){settled=true;clearTimeout(timeout);reject(Error(sfLastError));}
-    if(sfSearchResolve){const done=sfSearchResolve;sfSearchResolve=null;done({moves:[],status:sfLastError});}
-   };
-   sfWorker.postMessage('uci');
-  }catch(err){clearTimeout(timeout);settled=true;sfLastError=err.message;reject(err);}
+
+ function materialValue(p){return p?values[p[1]]:0}
+function attackersOf(b,sq,color){
+ const out=[];
+ for(let i=0;i<64;i++)if(b[i]&&b[i][0]===color&&pieceAttacksSquare(b,i,sq))out.push(i);
+ return out;
+}
+function isHanging(b,sq,color){
+ const p=b[sq];if(!p||p[0]!==color||p[1]==='k')return false;
+ const enemy=attackersOf(b,sq,opponent(color));
+ if(!enemy.length)return false;
+ const friendly=attackersOf(b,sq,color);
+ return enemy.length>friendly.length;
+}
+function givesCheck(b,m){
+ return inCheck(applyMove(b,m),opponent(b[m.from][0]));
+}
+function isMate(b,color){
+ return inCheck(b,color)&&legalMoves(b,color).length===0;
+}
+function moveCreatesFork(before,after,m,color){
+ const moved=after[m.to];if(!moved||moved[1]==='p')return false;
+ const targets=attacksFrom(after,m.to).filter(sq=>{
+  const p=after[sq];
+  return p&&p[0]!==color&&p[1]!=='k'&&materialValue(p)>=3;
  });
- return sfInitPromise;
+ const oldTargets=attacksFrom(before,m.from).filter(sq=>{
+  const p=before[sq];
+  return p&&p[0]!==color&&p[1]!=='k'&&materialValue(p)>=3;
+ });
+ return targets.length>=2&&targets.some(sq=>!oldTargets.includes(sq));
 }
-async function engineTopThree(fen){
- await startStockfish();
- return new Promise((resolve)=>{
-  if(!sfWorker||!sfReady){resolve({moves:[],status:sfLastError||'Chess engine is not ready.'});return;}
-  if(sfSearchTimer)clearTimeout(sfSearchTimer);
-  sfSearchBuffer='';sfSearchResolve=resolve;
-  sfSearchTimer=setTimeout(()=>{
-   sfSearchTimer=null;const done=sfSearchResolve;sfSearchResolve=null;
-   if(done)done({moves:[],status:'Chess engine search timed out.'});
-  },30000);
-  sfWorker.postMessage('setoption name MultiPV value 3');
-  sfWorker.postMessage('ucinewgame');
-  sfWorker.postMessage('position fen '+fen);
-  sfWorker.postMessage('go depth 17');
+function moveCreatesDiscoveredAttack(before,after,m,color){
+ for(let from=0;from<64;from++){
+  const p=after[from];
+  if(!p||p[0]!==color||from===m.to||!['b','r','q'].includes(p[1]))continue;
+  const newlyAttacked=attacksFrom(after,from).filter(sq=>{
+   const target=after[sq];
+   return target&&target[0]!==color&&target[1]!=='k'&&materialValue(target)>=3;
+  });
+  const previouslyAttacked=attacksFrom(before,from).filter(sq=>{
+   const target=before[sq];
+   return target&&target[0]!==color&&target[1]!=='k'&&materialValue(target)>=3;
+  });
+  if(newlyAttacked.some(sq=>!previouslyAttacked.includes(sq)))return true;
+ }
+ return false;
+}
+function moveCreatesPinOrSkewer(before,after,m,color){
+ for(let from=0;from<64;from++){
+  const p=after[from];
+  if(!p||p[0]!==color||!['b','r','q'].includes(p[1]))continue;
+  const ray=attacksFrom(after,from);
+  const enemies=ray.filter(sq=>after[sq]&&after[sq][0]!==color);
+  if(enemies.length<2)continue;
+  for(let i=0;i<enemies.length-1;i++){
+   const first=enemies[i],second=enemies[i+1];
+   const oldFirst=attacksFrom(before,from).includes(first);
+   const oldSecond=attacksFrom(before,from).includes(second);
+   if(!oldFirst||!oldSecond){
+    const a=after[first],b=after[second];
+    if(a&&b&&a[1]!=='k'&&b[1]!=='k'&&materialValue(a)!==materialValue(b))return true;
+   }
+  }
+ }
+ return false;
+}
+function createsTactic(b,m,color){
+ const after=applyMove(b,m);
+ return moveCreatesFork(b,after,m,color)||
+        moveCreatesDiscoveredAttack(b,after,m,color)||
+        moveCreatesPinOrSkewer(b,after,m,color);
+}
+function safeCheck(b,m,color){
+ if(!givesCheck(b,m))return false;
+ const after=applyMove(b,m);
+ const attackers=attackersOf(after,m.to,opponent(color));
+ const defenders=attackersOf(after,m.to,color);
+ return attackers.length<=defenders.length;
+}
+function attacksEnemyPiece(b,m,color){
+ const after=applyMove(b,m);
+ return attacksFrom(after,m.to).some(sq=>after[sq]&&after[sq][0]!==color&&after[sq][1]!=='k');
+}
+function canCastle(b,color){
+ const king=findKing(b,color);
+ if(king<0)return false;
+ const r=color==='w'?7:0;
+ if(king!==idx(r,4)||inCheck(b,color))return false;
+ for(const sideName of ['king','queen']){
+  const rookFile=sideName==='king'?7:0;
+  const rook=b[idx(r,rookFile)];
+  if(rook!==color+'r')continue;
+  const between=sideName==='king'?[5,6]:[1,2,3];
+  if(between.some(c=>b[idx(r,c)]))continue;
+  const transit=sideName==='king'?[5,6]:[3,2];
+  if(transit.some(c=>isSquareAttacked(b,idx(r,c),opponent(color))))continue;
+  return true;
+ }
+ return false;
+}
+function isDevelopingMove(b,m,color){
+ const p=b[m.from];if(!p||p[0]!==color)return false;
+ if(!['n','b'].includes(p[1]))return false;
+ const home=color==='w'?7:0;
+ if(row(m.from)!==home)return false;
+ return row(m.to)!==home;
+}
+function filterMoves(b,color){
+ const moves=legalMoves(b,color);
+ const results=Array.from({length:11},()=>[]);
+ const enemy=opponent(color);
+
+ // Filter 1: immediate checkmate.
+ for(const m of moves){
+  const after=applyMove(b,m);
+  if(isMate(after,enemy))results[0].push(m);
+ }
+
+ // Filter 2: checking moves that lead to a forced mate.
+ for(const m of moves){
+  if(!givesCheck(b,m))continue;
+  const after=applyMove(b,m);
+  if(isMate(after,enemy))continue;
+  const replies=legalMoves(after,enemy);
+  if(replies.length&&replies.every(reply=>{
+   const next=applyMove(after,reply);
+   return legalMoves(next,color).length===0&&inCheck(next,color);
+  }))results[1].push(m);
+ }
+
+ // Filter 3: avoid an immediate checkmate threat.
+ const enemyCanMate=legalMoves(b,enemy).some(m=>isMate(applyMove(b,m),color));
+ if(enemyCanMate){
+  for(const m of moves){
+   const after=applyMove(b,m);
+   if(!legalMoves(after,enemy).some(reply=>isMate(applyMove(after,reply),color)))results[2].push(m);
+  }
+ }
+
+ // Filter 4: non-checking moves that lead to a forced mating sequence.
+ for(const m of moves){
+  if(givesCheck(b,m))continue;
+  const after=applyMove(b,m);
+  const replies=legalMoves(after,enemy);
+  if(replies.length&&replies.every(reply=>{
+   const next=applyMove(after,reply);
+   return legalMoves(next,color).length===0&&inCheck(next,color);
+  }))results[3].push(m);
+ }
+
+ // Filter 5: promotion.
+ for(const m of moves)if(m.promotion)results[4].push(m);
+
+ // Filter 6: tactical opportunities.
+ for(const m of moves)if(createsTactic(b,m,color))results[5].push(m);
+
+ // Filter 7: safe check.
+ for(const m of moves)if(safeCheck(b,m,color))results[6].push(m);
+
+ // Filter 8: gain undefended material or defend a hanging piece.
+ for(const m of moves){
+  const captured=b[m.to];
+  const after=applyMove(b,m);
+  const gains=captured&&captured[1]!=='k'&&!isSquareAttacked(after,m.to,enemy);
+  const defends=Array.from({length:64},(_,sq)=>sq).some(sq=>{
+   const p=b[sq];
+   return p&&p[0]===color&&isHanging(b,sq,color)&&
+          attackersOf(after,sq,color).length>attackersOf(b,sq,color).length;
+  });
+  if(gains||defends)results[7].push(m);
+ }
+
+ // Filter 9: attack an enemy piece.
+ for(const m of moves)if(attacksEnemyPiece(b,m,color))results[8].push(m);
+
+ // Filter 10: castle.
+ if(canCastle(b,color)){
+  for(const m of moves)if(b[m.from]===color+'k'&&Math.abs(col(m.to)-col(m.from))===2)results[9].push(m);
+ }
+
+ // Filter 11: develop a piece.
+ for(const m of moves)if(isDevelopingMove(b,m,color))results[10].push(m);
+
+ const hit=results.findIndex(list=>list.length>0);
+ return {moves,results,hit,candidate:hit>=0?results[hit][0]:null};
+}
+
+ function renderBoard(element,b,filesElement,ranksElement,interactive=false){
+ element.innerHTML='';
+ const order=flipped?Array.from({length:64},(_,i)=>63-i):Array.from({length:64},(_,i)=>i);
+ for(const i of order){
+  const r=row(i),c=col(i);
+  const sq=document.createElement('div');
+  sq.className='square '+((r+c)%2===0?'light':'dark');
+  if(i===selectedSquare)sq.classList.add('selected');
+  if(lastMove&&(i===lastMove.from||i===lastMove.to))sq.classList.add('lastmove');
+  if(selectedMoves.some(m=>m.to===i)){
+   sq.classList.add(b[i]?'capture':'target');
+  }
+  sq.dataset.square=i;
+  if(b[i]){
+   const piece=document.createElement('div');
+   piece.className='piece '+(b[i][0]==='w'?'white':'black');
+   piece.textContent=glyph[b[i]];
+   piece.dataset.pieceSquare=i;
+   sq.appendChild(piece);
+  }
+  element.appendChild(sq);
+ }
+ if(filesElement){
+  filesElement.innerHTML='';
+  const f=flipped?[...files].reverse():[...files];
+  f.forEach(x=>{const s=document.createElement('span');s.textContent=x;filesElement.appendChild(s)});
+ }
+ if(ranksElement){
+  ranksElement.innerHTML='';
+  const r=flipped?[...ranks].reverse():[...ranks];
+  r.forEach(x=>{const s=document.createElement('span');s.textContent=x;ranksElement.appendChild(s)});
+ }
+}
+function renderSetup(){
+ renderBoard($('setupBoard'),board,$('setupFiles'),$('setupRanks'),true);
+}
+function renderAnalysis(){
+ renderBoard($('analysisBoard'),board,$('analysisFiles'),$('analysisRanks'),false);
+}
+function buildPalette(){
+ const el=$('palette');
+ el.innerHTML='';
+ palette.forEach(([piece,name])=>{
+  const btn=document.createElement('button');
+  btn.className='piece-btn'+(piece===selectedPiece?' selected':'');
+  btn.dataset.piece=piece;
+  btn.innerHTML='<span class="symbol">'+glyph[piece]+'</span><small>'+name+'</small>';
+  btn.onclick=()=>{
+   selectedPiece=piece;
+   eraserMode=false;
+   $('eraser').classList.remove('active');
+   document.querySelectorAll('.piece-btn').forEach(b=>b.classList.toggle('selected',b.dataset.piece===piece));
+  };
+  el.appendChild(btn);
+ });
+}
+function filterWhy(hit){
+ if(hit<0)return 'No ENIGMA priority filter found a matching move.';
+ return 'The selected move was chosen by priority Filter '+(hit+1)+': '+filterNames[hit];
+}
+function showResults(result,engineMoves=[],engineStatus=''){
+  const filterCandidate=result.candidate;
+  const engineBest=engineMoves.length?parseUciMove(engineMoves[0].uci,result.moves):null;
+  const chosen=engineBest||filterCandidate;
+  bestMove=chosen;
+
+  // Highlight the filter that contains the move actually being displayed.
+  const chosenFilter=chosen
+    ? result.results.findIndex(moves=>moves.some(m=>uciMove(m)===uciMove(chosen)))
+    : -1;
+
+  if(chosen){
+    $('best').textContent=san(chosen,board);
+    $('filterName').textContent=chosenFilter>=0?'Filter '+(chosenFilter+1):'No matching filter';
+
+    if(engineBest){
+      if(filterCandidate&&uciMove(filterCandidate)===uciMove(engineBest)){
+        $('why').textContent='ENIGMA selected this move, which satisfies Filter '+(chosenFilter+1)+'.';
+      }else if(filterCandidate){
+        $('why').textContent='Stockfish selected this move. ENIGMA’s original filter candidate was '+san(filterCandidate,board)+' (Filter '+(result.hit+1)+').';
+      }else{
+        $('why').textContent=chosenFilter>=0
+          ? 'Stockfish selected this move, which satisfies Filter '+(chosenFilter+1)+'.'
+          : 'Stockfish selected this move, but it does not match any of ENIGMA’s filters.';
+      }
+    }else{
+      $('why').textContent=chosenFilter>=0
+        ? 'ENIGMA selected this move using Filter '+(chosenFilter+1)+'.'
+        : 'No filter matched the selected move.';
+    }
+  }else{
+    $('best').textContent='—';
+    $('filterName').textContent='No legal move';
+    $('why').textContent='No legal moves were returned. Check that the position is legal and both kings are present.';
+  }
+
+  $('legalCount').textContent=String(result.moves.length);
+  $('turnInfo').textContent=side==='w'?'White':'Black';
+
+  const list=$('filterList');
+  list.innerHTML='';
+
+  for(let i=0;i<11;i++){
+    const row=document.createElement('div');
+    row.className='filter-row';
+
+    const n=document.createElement('div');
+    n.className='filter-num';
+    n.textContent=String(i+1);
+
+    const text=document.createElement('div');
+    text.className=i===chosenFilter?'filter-hit':'filter-miss';
+    text.textContent=filterNames[i];
+
+    const count=document.createElement('div');
+    count.style.color=i===chosenFilter?'#d9c889':'#728071';
+    count.textContent=(result.results[i]||[]).length+' move'+((result.results[i]||[]).length===1?'':'s');
+
+    row.append(n,text,count);
+    list.appendChild(row);
+  }
+
+  const top=engineMoves.slice(0,3).map((x,i)=>(i+1)+'. '+x.uci).join('   ');
+
+  $('status').textContent=(engineBest?'Engine analysis completed. ':'Engine analysis did not return a usable move. ')+(top?'Top engine moves: '+top+'. ':'')+engineStatus;
+
+  $('engineBadge').textContent=engineBest?'ENIGMA FILTERS':'LOGIC UNAVAILABLE';
+  $('engineBadge').style.background=engineBest?'#203d28':'#4a2925';
+  $('engineBadge').style.borderColor=engineBest?'#638451':'#9a5c50';
+
+  renderAnalysis();
+}
+
+ async function runEngine(position,turn){
+ const workerCandidates=[
+  'engine/stockfish-18-lite-single.js',
+  './engine/stockfish-18-lite-single.js'
+ ];
+ let worker=null,lastError=null;
+ for(const path of workerCandidates){
+  try{
+   worker=new Worker(path);
+   break;
+  }catch(e){lastError=e}
+ }
+ if(!worker)throw lastError||Error('Could not start Stockfish.');
+ return new Promise((resolve,reject)=>{
+  let finished=false;
+  const moves=[];
+  const timeout=setTimeout(()=>{
+   if(finished)return;
+   finished=true;
+   worker.terminate();
+   reject(Error('Stockfish timed out.'));
+  },15000);
+  worker.onmessage=e=>{
+   const message=typeof e.data==='string'?e.data:'';
+   if(message.includes('uciok'))worker.postMessage('isready');
+   if(message.includes('readyok')){
+    worker.postMessage('position fen '+position+' '+turn+' - - 0 1');
+    worker.postMessage('go depth 12');
+   }
+   if(message.startsWith('info')){
+    const match=message.match(/\bpv\s+(.+)/);
+    if(match){
+     const uci=match[1].trim().split(/\s+/)[0];
+     if(uci&&!moves.some(m=>m.uci===uci))moves.push({uci});
+    }
+   }
+   if(message.startsWith('bestmove')){
+    if(finished)return;
+    finished=true;
+    clearTimeout(timeout);
+    const match=message.match(/^bestmove\s+(\S+)/);
+    if(match&&match[1]!=='(none)'){
+     resolve([{uci:match[1]},...moves.filter(m=>m.uci!==match[1])]);
+    }else resolve(moves);
+    worker.terminate();
+   }
+  };
+  worker.onerror=e=>{
+   if(finished)return;
+   finished=true;
+   clearTimeout(timeout);
+   worker.terminate();
+   reject(Error(e.message||'Stockfish worker error.'));
+  };
+  worker.postMessage('uci');
  });
 }
 async function go(){
+ const kings={w:board.includes('wk'),b:board.includes('bk')};
+ if(!kings.w||!kings.b){
+  alert('Please place both kings on the board before analysing.');
+  return;
+ }
+ const result=filterMoves(board,side);
+ $('setupPanel').style.display='none';
+ $('analysisPanel').style.display='grid';
+ $('engineBadge').textContent='ANALYSING';
+ renderAnalysis();
  try{
-  $('go').disabled=true;$('setupStatus').textContent='Analysing position…';
-  $('engineBadge').textContent='ENGINE STARTING…';
-  let engine={moves:[],status:'Engine temporarily offline, suggested move may be wrong.'};
-  try{engine=await engineTopThree(currentFen());}catch(e){engine.status=e.message;sfLastError=e.message;console.error('Stockfish error:',e);}
-  let result;
-  try{result=chooseBest(board,side);}catch(e){
-   console.error('Filter analysis error:',e);
-   result={moves:[],results:Array.from({length:10},()=>[]),hit:-1,candidate:null,threat:false};
-   $('setupStatus').textContent='Filter analysis warning: '+e.message;
-  }
-  // The engine-supported recommendation is shown as best when a legal engine move is available; the filter results remain visible for comparison.
-  $('setupView').classList.add('hidden');$('analysisView').classList.remove('hidden');$('analysisView').setAttribute('aria-hidden','false');
-  showResults(result,engine.moves,engine.status);
- }catch(e){$('setupStatus').textContent='Analysis error: '+e.message;console.error(e)}
- finally{$('go').disabled=false}
+  const position=fenPosition(board);
+  const engineMoves=await runEngine(position,side);
+  showResults(result,engineMoves,'Stockfish analysis finished.');
+ }catch(e){
+  showResults(result,[],'Stockfish unavailable: '+e.message);
+ }
 }
-function back(){$('analysisView').classList.add('hidden');$('setupView').classList.remove('hidden');bestMove=null;last=null;renderSetup()}
-function init(){squareMarkup('board');squareMarkup('analysisBoard');bindBoard('board');bindBoard('analysisBoard');paletteInit();$('eraser').onclick=()=>{tool='erase';selectedSquare=null;selectedMoves=[];$('toolStatus').textContent='Eraser';document.querySelectorAll('.piece-btn').forEach(b=>b.classList.remove('selected'));$('eraser').classList.add('active')};$('clear').onclick=clearBoard;$('start').onclick=startingPosition;$('flip').onclick=()=>{flipped=!flipped;renderSetup()};$('whiteTurn').onclick=()=>{side='w';$('whiteTurn').classList.add('active');$('blackTurn').classList.remove('active')};$('blackTurn').onclick=()=>{side='b';$('blackTurn').classList.add('active');$('whiteTurn').classList.remove('active')};$('load').onclick=()=>loadFen($('fen').value);$('fen').addEventListener('keydown',e=>{if(e.key==='Enter')loadFen($('fen').value)});$('go').onclick=go;$('back').onclick=back;$('newPosition').onclick=startingPosition;startingPosition()}
+function back(){
+ $('analysisPanel').style.display='none';
+ $('setupPanel').style.display='flex';
+ renderSetup();
+}
+function setupBoardInteraction(){
+ const el=$('setupBoard');
+ el.addEventListener('click',e=>{
+  const square=e.target.closest('.square');
+  if(!square)return;
+  const i=Number(square.dataset.square);
+  if(eraserMode){
+   board[i]=null;
+   selectedSquare=null;
+   selectedMoves=[];
+   renderSetup();
+   return;
+  }
+  if(selectedPiece){
+   board[i]=selectedPiece;
+   selectedSquare=null;
+   selectedMoves=[];
+   renderSetup();
+  }
+ });
+ el.addEventListener('pointerdown',e=>{
+  const piece=e.target.closest('.piece');
+  if(!piece)return;
+  const from=Number(piece.dataset.pieceSquare);
+  if(!Number.isInteger(from)||!board[from])return;
+  e.preventDefault();
+  const moving=board[from];
+  const startX=e.clientX,startY=e.clientY;
+  let moved=false;
+  const onMove=ev=>{
+   if(Math.abs(ev.clientX-startX)+Math.abs(ev.clientY-startY)>8)moved=true;
+  };
+  const onUp=ev=>{
+   document.removeEventListener('pointermove',onMove);
+   document.removeEventListener('pointerup',onUp);
+   if(!moved)return;
+   const target=document.elementFromPoint(ev.clientX,ev.clientY);
+   const square=target&&target.closest('.square');
+   if(!square)return;
+   const to=Number(square.dataset.square);
+   if(!Number.isInteger(to)||to===from)return;
+   board[to]=moving;
+   board[from]=null;
+   selectedSquare=null;
+   selectedMoves=[];
+   renderSetup();
+  };
+  document.addEventListener('pointermove',onMove);
+  document.addEventListener('pointerup',onUp);
+ });
+}
+function init(){
+ buildPalette();
+ setupBoardInteraction();
+ $('eraser').onclick=()=>{
+  eraserMode=!eraserMode;
+  $('eraser').classList.toggle('active',eraserMode);
+  document.querySelectorAll('.piece-btn').forEach(b=>b.classList.remove('selected'));
+ };
+ $('clear').onclick=clearBoard;
+ $('start').onclick=startingPosition;
+ $('flip').onclick=()=>{flipped=!flipped;renderSetup()};
+ $('whiteTurn').onclick=()=>{
+  side='w';
+  $('whiteTurn').classList.add('active');
+  $('blackTurn').classList.remove('active');
+ };
+ $('blackTurn').onclick=()=>{
+  side='b';
+  $('blackTurn').classList.add('active');
+  $('whiteTurn').classList.remove('active');
+ };
+ $('load').onclick=()=>loadFen($('fen').value);
+ $('fen').addEventListener('keydown',e=>{
+  if(e.key==='Enter')loadFen($('fen').value);
+ });
+ $('go').onclick=go;
+ $('back').onclick=back;
+ $('newPosition').onclick=startingPosition;
+ startingPosition();
+}
 init();
 })();
 </script>
