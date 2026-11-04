@@ -833,7 +833,7 @@ function showResults(result,engineMoves=[],engineStatus=''){
 
   if(chosen){
     $('best').textContent=san(chosen,board);
-    $('filterName').textContent=chosenFilter>=0?'Filter '+(chosenFilter+1):'No matching filter';
+    $('filterName').textContent=chosenFilter>=0?'Filter '+(chosenFilter+1):'Logic Error, No matching Filter';
 
     if(engineBest){
       if(filterCandidate&&uciMove(filterCandidate)===uciMove(engineBest)){
