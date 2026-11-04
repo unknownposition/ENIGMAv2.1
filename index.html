@@ -185,21 +185,59 @@ function moveSafety(b,m){
  return {safe,attacked,defended,reason:safe?'Not left undefended':'Attacked and undefended'};
 }
 function hasUndefendedGain(b,m){
+ const color=m.color, opp=color==='w'?'b':'w';
+ const attacker=b[m.from];
+ if(!attacker)return false;
+
+ // 1. A capture qualifies if the target was undefended, or if
+ // a cheaper piece captures a more valuable defended piece.
  const target=b[m.to];
- if(target&&target[0]!==m.color&&typeOf(target)!=='k'){const enemy=target[0];const targetVal=values[target[1]];const nb=makeMove(b,m);const targetSq=m.to;const defended=isSquareAttacked(b,targetSq,enemy);return !defended||values[m.piece]<targetVal}
- // Also detect a move that wins another hanging enemy piece by attacking it with a defended piece.
- const nb=makeMove(b,m);for(let sq=0;sq<64;sq++){const p=nb[sq];if(p&&p[0]!==m.color&&p[1]!=='k'&&!isSquareAttacked(nb,sq,p[0]))return true}
+ if(target&&target[0]===opp&&target[1]!=='k'){
+  const targetValue=values[target[1]]||0;
+  const attackerValue=values[attacker[1]]||0;
+  const wasDefended=isSquareAttacked(b,m.to,opp);
+  if(!wasDefended||attackerValue<targetValue)return true;
+ }
+
+ const after=makeMove(b,m);
+
+ // 2. A move qualifies if it creates a NEW attack on an enemy piece
+ // that has no defenders. Pieces that were already hanging do not
+ // make every unrelated move qualify.
+ for(let sq=0;sq<64;sq++){
+  const enemyPiece=after[sq];
+  if(!enemyPiece||enemyPiece[0]!==opp||enemyPiece[1]==='k')continue;
+
+  const newlyAttacked=
+   isSquareAttacked(after,sq,color)&&
+   !isSquareAttacked(b,sq,color);
+
+  const undefended=!isSquareAttacked(after,sq,opp);
+  if(!newlyAttacked||!undefended)continue;
+
+  // Avoid calling a hanging attacker's move a material gain.
+  const movedPiece=after[m.to];
+  if(movedPiece&&isSquareAttacked(after,m.to,opp)&&
+     !isSquareAttacked(after,m.to,color))continue;
+
+  return true;
+ }
+
  return false;
 }
 function defendsHanging(b,m){
  const before=b, after=makeMove(b,m), color=m.color, opp=color==='w'?'b':'w';
+
+ // A piece only counts as hanging if it was attacked and undefended
+ // before the move, then becomes defended while still under attack.
  for(let sq=0;sq<64;sq++){
   const p=before[sq], q=after[sq];
   if(p&&p[0]===color&&p[1]!=='k'&&q===p){
    const wasAttacked=isSquareAttacked(before,sq,opp);
+   const wasUndefended=!isSquareAttacked(before,sq,color);
    const nowDefended=isSquareAttacked(after,sq,color);
    const stillAttacked=isSquareAttacked(after,sq,opp);
-   if(wasAttacked && nowDefended && stillAttacked)return true;
+   if(wasAttacked&&wasUndefended&&nowDefended&&stillAttacked)return true;
   }
  }
  return false;
@@ -804,11 +842,11 @@ function showResults(result,engineMoves=[],engineStatus=''){
       if(filterCandidate&&uciMove(filterCandidate)===uciMove(engineBest)){
         $('why').textContent='ENIGMA selected this move, which satisfies Filter '+(chosenFilter+1)+'.';
       }else if(filterCandidate){
-        $('why').textContent='ENIGMA filters selected this move.';
+        $('why').textContent='Stockfish selected this move. ENIGMA’s original filter candidate was '+san(filterCandidate,board)+' (Filter '+(result.hit+1)+').';
       }else{
         $('why').textContent=chosenFilter>=0
-          ? 'ENIGMA selected this move, which satisfies Filter '+(chosenFilter+1)+'.'
-          : 'ENOGMA selected this move, due to a technical glitch, none of the filters are satisfied.';
+          ? 'Stockfish selected this move, which satisfies Filter '+(chosenFilter+1)+'.'
+          : 'Stockfish selected this move, but it does not match any of ENIGMA’s filters.';
       }
     }else{
       $('why').textContent=chosenFilter>=0
@@ -842,7 +880,7 @@ function showResults(result,engineMoves=[],engineStatus=''){
   }
   const top=engineMoves.slice(0,3).map((x,i)=>(i+1)+'. '+x.uci).join('   ');
   $('status').textContent=(engineBest?'Engine analysis completed. ':'Engine analysis did not return a usable move. ')+(top?'Top engine moves: '+top+'. ':'')+engineStatus;
-  $('engineBadge').textContent=engineBest?'ENIGMA FILTERS':'LOGIC UNAVAILABLE';
+  $('engineBadge').textContent=engineBest?'STOCKFISH + FILTERS':'LOGIC UNAVAILABLE';
   $('engineBadge').style.background=engineBest?'#203d28':'#4a2925';
   $('engineBadge').style.borderColor=engineBest?'#638451':'#9a5c50';
   renderAnalysis();
