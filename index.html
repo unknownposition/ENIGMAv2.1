@@ -17,6 +17,25 @@
 .analysis-view{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px;align-items:center;max-width:1400px;margin:0 auto}.analysis-board-wrap{display:flex;justify-content:flex-end}.analysis-board-frame{width:min(72vh,46vw,640px);aspect-ratio:1;padding:5px;border:1px solid rgba(238,242,223,.18);border-radius:12px;background:#0f2116;box-shadow:0 22px 55px rgba(0,0,0,.32)}.analysis-card{width:min(100%,700px);justify-self:start;border:1px solid rgba(238,242,223,.14);background:linear-gradient(180deg,rgba(18,39,28,.97),rgba(12,28,19,.97));border-radius:16px;padding:16px;height:min(88vh,820px);overflow:hidden;display:flex;flex-direction:column}.analysis-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}.analysis-title{display:flex;align-items:center;gap:10px}.analysis-icon{font-size:22px}.analysis-title h2{font:27px Georgia,"Times New Roman",serif;margin:0}.engine-pill{padding:6px 9px;border-radius:8px;background:#24372a;border:1px solid #53694a;color:#cbd7c2;font-size:9px;letter-spacing:.08em}.engine-pill:before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:#8eb76a;margin-right:6px}
 .filter-badge{padding:5px 8px;border-radius:7px;background:#3d3520;border:1px solid #8c7a42;color:#eadfbe;font-size:9px;letter-spacing:.08em}.best-card{background:#20382a;border:1px solid #4c6c47;border-radius:12px;padding:15px;margin-bottom:14px}.best-tag{display:inline-block;padding:4px 8px;border-radius:6px;background:#5f8b46;font-size:9px;font-weight:850;letter-spacing:.08em;text-transform:uppercase;margin-bottom:7px}.best-line{display:flex;align-items:baseline;gap:9px}.best-move{font-size:30px;font-weight:900}.eval{font-size:12px;color:#becdb8}.why{margin-top:7px;color:#dae1d6;line-height:1.45;font-size:12px}.section-heading{font-size:9px;text-transform:uppercase;letter-spacing:.15em;color:#aab7a5;margin-bottom:6px}.pv-list{flex:1;min-height:0;overflow:auto}.pv-line{display:flex;gap:10px;align-items:center;padding:7px 0;border-bottom:1px solid rgba(238,242,223,.08);font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px}.pv-move{color:#f1eee7}.filter-row{display:grid;grid-template-columns:24px 1fr auto;gap:7px;align-items:center;padding:5px 0;border-bottom:1px solid rgba(238,242,223,.08);font-size:11px}.filter-num{color:#8eaa7d;font-weight:900}.filter-hit{color:#dcebc9}.filter-miss{color:#79867a}.meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0 10px}.meta{background:#213128;border:1px solid rgba(238,242,223,.08);border-radius:9px;padding:9px}.meta .num{font-size:18px;font-weight:850}.meta small{display:block;margin-top:2px;color:#9eaa9c;font-size:9px;text-transform:uppercase}.analysis-actions{display:flex;gap:6px;margin-top:10px}.analysis-actions button{height:34px;border-radius:8px;border:1px solid var(--line);background:#172a1e;color:var(--cream);font-size:11px;font-weight:800;padding:0 11px}.status{min-height:17px;margin-top:8px;font-size:10px;color:var(--muted)}
 @media(max-width:900px){html,body{overflow:auto}.main{height:auto}.header-right{display:none}.setup-content{height:auto}.board-frame{width:min(82vw,62vh,560px)}.setup-tools,.action-row,.fen-row{width:min(82vw,560px)}.analysis-view{height:auto;grid-template-columns:1fr;padding:8px 0 18px}.analysis-board-wrap{justify-content:center}.analysis-board-frame{width:min(82vw,560px)}.analysis-card{width:100%;height:auto;min-height:520px}}
+.sq.legal-target:not(.legal-capture)::after{
+  content:"";
+  position:absolute;
+  width:22%;
+  aspect-ratio:1;
+  border-radius:50%;
+  background:rgba(20,35,20,.35);
+  z-index:3;
+  pointer-events:none;
+}
+.sq.legal-capture::after{
+  content:"";
+  position:absolute;
+  inset:5%;
+  border:5px solid rgba(20,35,20,.38);
+  border-radius:50%;
+  z-index:3;
+  pointer-events:none;
+}
 </style>
 </head>
 <body>
@@ -59,7 +78,7 @@ const filterNames=[
  'Does any move castle?',
  'Does any move develop a piece?'
 ];
-let board=[],tool=null,flipped=false,side='w',selectedSquare=null,last=null,bestMove=null,castling='KQkq',epSquare=null;
+let board=[],tool=null,flipped=false,side='w',selectedSquare=null,selectedMoves=[],last=null,bestMove=null,castling='KQkq',epSquare=null;
 const $=id=>document.getElementById(id);
 const idx=(r,c)=>r*8+c, inBoard=(r,c)=>r>=0&&r<8&&c>=0&&c<8;
 function cloneBoard(b){return b.slice()}
@@ -373,45 +392,228 @@ function chooseBest(b,color){
  return {moves,results,hit,candidate,threat};
 }
 function squareMarkup(containerId){const b=$(containerId);b.innerHTML='';for(let i=0;i<64;i++){const d=document.createElement('div');d.className='sq '+(((Math.floor(i/8)+i%8)%2===0)?'light':'dark');b.appendChild(d)}}
-function renderInto(containerId){const b=$(containerId),cells=[...b.children];for(let i=0;i<64;i++){const idx2=flipped?63-i:i,d=cells[i];d.dataset.index=String(idx2);d.className='sq '+(((Math.floor(idx2/8)+idx2%8)%2===0)?'light':'dark');if(last&&(idx2===last.from||idx2===last.to))d.classList.add('last');if(bestMove&&(idx2===bestMove.from||idx2===bestMove.to))d.classList.add('best');d.innerHTML='';const p=board[idx2];if(p){const s=document.createElement('span');s.className='piece '+(p[0]==='w'?'white-piece':'black-piece');s.textContent=glyph[p];d.appendChild(s)}if(i%8===0){const r=document.createElement('span');r.className='coord rank';r.textContent=ranks[Math.floor(idx2/8)];d.appendChild(r)}if(Math.floor(i/8)===7){const f=document.createElement('span');f.className='coord file';f.textContent=files[idx2%8];d.appendChild(f)}if(selectedSquare===idx2)d.classList.add('click-selected')}}
+function renderInto(containerId){
+ const b=$(containerId),cells=[...b.children];
+ for(let i=0;i<64;i++){
+  const idx2=flipped?63-i:i,d=cells[i];
+  d.dataset.index=String(idx2);
+  d.className='sq '+(((Math.floor(idx2/8)+idx2%8)%2===0)?'light':'dark');
+  if(last&&(idx2===last.from||idx2===last.to))d.classList.add('last');
+  if(bestMove&&(idx2===bestMove.from||idx2===bestMove.to))d.classList.add('best');
+  d.innerHTML='';
+  const p=board[idx2];
+  if(p){
+   const s=document.createElement('span');
+   s.className='piece '+(p[0]==='w'?'white-piece':'black-piece');
+   s.textContent=glyph[p];
+   d.appendChild(s);
+  }
+  if(i%8===0){
+   const r=document.createElement('span');
+   r.className='coord rank';
+   r.textContent=ranks[Math.floor(idx2/8)];
+   d.appendChild(r);
+  }
+  if(Math.floor(i/8)===7){
+   const f=document.createElement('span');
+   f.className='coord file';
+   f.textContent=files[idx2%8];
+   d.appendChild(f);
+  }
+  if(selectedSquare===idx2)d.classList.add('click-selected');
+  const legalTarget=selectedMoves.some(m=>m.to===idx2);
+  if(legalTarget){
+   d.classList.add('legal-target');
+   if(board[idx2])d.classList.add('legal-capture');
+  }
+ }
+}
 function renderSetup(){renderInto('board');$('setupStatus').textContent='Ready.'}
 function renderAnalysis(){renderInto('analysisBoard')}
-function clearTools(){tool=null;selectedSquare=null;document.querySelectorAll('.piece-btn,.tool-btn').forEach(x=>x.classList.remove('selected','active'));$('toolStatus').textContent='Move / place pieces'}
-function paletteInit(){const p=$('palette');palette.forEach(([k,name])=>{const b=document.createElement('button');b.className='piece-btn';b.title=(k[0]==='w'?'White ':'Black ')+name;const s=document.createElement('span');s.className='palette-glyph '+(k[0]==='w'?'white-piece':'black-piece');s.textContent=glyph[k];b.appendChild(s);b.onclick=()=>{tool=k;selectedSquare=null;$('toolStatus').textContent=(k[0]==='w'?'White ':'Black ')+name;document.querySelectorAll('.piece-btn,.tool-btn').forEach(x=>x.classList.remove('selected','active'));b.classList.add('selected')};p.appendChild(b)})}
+function clearTools(){
+ tool=null;
+ selectedSquare=null;
+ selectedMoves=[];
+ document.querySelectorAll('.piece-btn,.tool-btn').forEach(x=>x.classList.remove('selected','active'));
+ $('toolStatus').textContent='Move / place pieces';
+}
+function paletteInit(){const p=$('palette');palette.forEach(([k,name])=>{const b=document.createElement('button');b.className='piece-btn';b.title=(k[0]==='w'?'White ':'Black ')+name;const s=document.createElement('span');s.className='palette-glyph '+(k[0]==='w'?'white-piece':'black-piece');s.textContent=glyph[k];b.appendChild(s);b.onclick=()=>{tool=k;selectedSquare=null;selectedMoves=[];$('toolStatus').textContent=(k[0]==='w'?'White ':'Black ')+name;document.querySelectorAll('.piece-btn,.tool-btn').forEach(x=>x.classList.remove('selected','active'));b.classList.add('selected')};p.appendChild(b)})}
 function bindBoard(id){
- const b=$(id); let dragFrom=null, suppressClick=false, lastPieceTap=null;
+ const b=$(id);
+ let dragFrom=null, suppressClick=false, lastPieceTap=null;
+
  b.addEventListener('click',e=>{
-  if(suppressClick){suppressClick=false;return;}
-  const sq=e.target.closest('.sq'); if(!sq)return; const i=Number(sq.dataset.index);
-  // Two quick clicks/taps on the same occupied square delete that piece.
-  // A 420 ms window feels deliberate without requiring an awkwardly fast double-tap.
-  const now=Date.now();
-  if(!tool && board[i] && lastPieceTap && lastPieceTap.square===i && now-lastPieceTap.time<=420){
-   board[i]=null;selectedSquare=null;last=null;lastPieceTap=null;renderSetup();return;
+  if(suppressClick){
+   suppressClick=false;
+   return;
   }
-  lastPieceTap=(!tool && board[i])?{square:i,time:now}:null;
-  if(tool==='erase'){board[i]=null;selectedSquare=null;last=null;lastPieceTap=null;renderSetup();return;}
-  if(tool){board[i]=tool;selectedSquare=null;last=null;renderSetup();return;}
-  if(selectedSquare!==null){
-   if(selectedSquare!==i && board[selectedSquare]){const m={from:selectedSquare,to:i,color:side,piece:board[selectedSquare][1],capture:board[i]||null};board[i]=board[selectedSquare];board[selectedSquare]=null;applyStateMove(m);last={from:m.from,to:m.to};}
-   selectedSquare=null;renderSetup();return;
-  }
-  if(board[i]){selectedSquare=i;renderSetup();}
- });
- b.addEventListener('pointerdown',e=>{
-  if(e.button!==0)return;
+
   const sq=e.target.closest('.sq');
   if(!sq)return;
   const i=Number(sq.dataset.index);
 
+  // Preserve the existing double-click deletion feature.
+  const now=Date.now();
+  if(!tool && board[i] && lastPieceTap && lastPieceTap.square===i && now-lastPieceTap.time<=420){
+   board[i]=null;
+   selectedSquare=null;
+   selectedMoves=[];
+   last=null;
+   lastPieceTap=null;
+   renderSetup();
+   return;
+  }
+
+  lastPieceTap=(!tool && board[i])?{square:i,time:now}:null;
+
   if(tool==='erase'){
-    board[i]=null;
+   board[i]=null;
+   selectedSquare=null;
+   selectedMoves=[];
+   last=null;
+   lastPieceTap=null;
+   renderSetup();
+   return;
+  }
+
+  if(tool){
+   board[i]=tool;
+   selectedSquare=null;
+   selectedMoves=[];
+   last=null;
+   renderSetup();
+   return;
+  }
+
+  // If a piece is already selected, check whether this is a legal destination.
+  if(selectedSquare!==null){
+   const move=selectedMoves.find(m=>m.to===i&&(!m.promotion||m.promotion==='q'));
+
+   if(move){
+    applyStateMove(move);
+    board=makeMove(board,move);
+    side=side==='w'?'b':'w';
+    last={from:move.from,to:move.to};
     selectedSquare=null;
-    last=null;
-    lastPieceTap=null;
+    selectedMoves=[];
+    $('whiteTurn').classList.toggle('active',side==='w');
+    $('blackTurn').classList.toggle('active',side==='b');
     renderSetup();
     return;
+   }
+
+   // Clicking the selected piece again deselects it.
+   if(i===selectedSquare){
+    selectedSquare=null;
+    selectedMoves=[];
+    renderSetup();
+    return;
+   }
+
+   // Clicking another friendly piece selects that piece instead.
+   if(board[i]&&board[i][0]===side){
+    selectedSquare=i;
+    selectedMoves=legalMoves(board,side).filter(m=>m.from===i);
+    renderSetup();
+    return;
+   }
+
+   // Clicking an invalid destination cancels the selection.
+   selectedSquare=null;
+   selectedMoves=[];
+   renderSetup();
+   return;
   }
+
+  // Select a piece belonging to the side whose turn it is.
+  if(board[i]&&board[i][0]===side){
+   selectedSquare=i;
+   selectedMoves=legalMoves(board,side).filter(m=>m.from===i);
+   renderSetup();
+  }
+ });
+
+ b.addEventListener('pointerdown',e=>{
+  if(e.button!==0)return;
+
+  const sq=e.target.closest('.sq');
+  if(!sq)return;
+
+  const i=Number(sq.dataset.index);
+
+  if(tool==='erase'){
+   board[i]=null;
+   selectedSquare=null;
+   selectedMoves=[];
+   last=null;
+   lastPieceTap=null;
+   renderSetup();
+   return;
+  }
+
+  if(tool)return;
+
+  if(board[i]){
+   dragFrom=i;
+   sq.setPointerCapture?.(e.pointerId);
+  }
+ });
+
+ b.addEventListener('pointerup',e=>{
+  if(dragFrom===null)return;
+
+  const from=dragFrom;
+  dragFrom=null;
+
+  const hit=document.elementFromPoint(e.clientX,e.clientY)?.closest?.('.sq');
+
+  // Releasing on the original square allows the normal click event to select it.
+  if(hit&&Number(hit.dataset.index)===from)return;
+
+  if(hit&&hit.closest('.board')){
+   const to=Number(hit.dataset.index);
+
+   if(to!==from&&board[from]){
+    const m={
+     from,
+     to,
+     color:side,
+     piece:board[from][1],
+     capture:board[to]||null
+    };
+
+    board[to]=board[from];
+    board[from]=null;
+    applyStateMove(m);
+    selectedSquare=null;
+    selectedMoves=[];
+    last={from,to};
+    suppressClick=true;
+    renderSetup();
+    return;
+   }
+  }
+
+  suppressClick=true;
+ });
+
+ b.addEventListener('pointercancel',()=>{
+  dragFrom=null;
+ });
+
+ b.addEventListener('contextmenu',e=>{
+  e.preventDefault();
+  const sq=e.target.closest('.sq');
+  if(!sq)return;
+
+  const i=Number(sq.dataset.index);
+  board[i]=null;
+  selectedSquare=null;
+  selectedMoves=[];
+  last=null;
+  renderSetup();
+ });
+}
 
   if(board[i]){
     dragFrom=i;
@@ -431,7 +633,7 @@ function bindBoard(id){
 
 function startingPosition(){board=parseFenBoard(initialFen);side='w';castling='KQkq';epSquare=null;flipped=false;last=null;bestMove=null;clearTools();$('whiteTurn').classList.add('active');$('blackTurn').classList.remove('active');$('analysisView').classList.add('hidden');$('analysisView').setAttribute('aria-hidden','true');$('setupView').classList.remove('hidden');$('fen').value='';renderSetup();$('setupStatus').textContent='Starting position loaded. Standard chess position ready.';$('status').textContent='Starting position loaded.';}
 function clearBoard(){board=Array(64).fill(null);last=null;bestMove=null;clearTools();renderSetup();$('setupStatus').textContent='Position cleared.'}
-function loadFen(f){try{const a=f.trim().split(/\s+/);if(a.length<2)throw Error('Paste a valid FEN.');board=parseFenBoard(a[0]);side=a[1]==='b'?'b':'w';castling=a[2]&&a[2]!=='-'?a[2]:'-';epSquare=a[3]&&a[3]!=='-'?parseSquare(a[3]):null;last=null;bestMove=null;selectedSquare=null;$('whiteTurn').classList.toggle('active',side==='w');$('blackTurn').classList.toggle('active',side==='b');renderSetup();$('setupStatus').textContent='FEN loaded.'}catch(e){$('setupStatus').textContent='Invalid FEN: '+e.message}}
+function loadFen(f){try{const a=f.trim().split(/\s+/);if(a.length<2)throw Error('Paste a valid FEN.');board=parseFenBoard(a[0]);side=a[1]==='b'?'b':'w';castling=a[2]&&a[2]!=='-'?a[2]:'-';epSquare=a[3]&&a[3]!=='-'?parseSquare(a[3]):null;last=null;bestMove=null;selectedSquare=null;selectedMoves=[];$('whiteTurn').classList.toggle('active',side==='w');$('blackTurn').classList.toggle('active',side==='b');renderSetup();$('setupStatus').textContent='FEN loaded.'}catch(e){$('setupStatus').textContent='Invalid FEN: '+e.message}}
 function filterWhy(hit){return hit<0?'None of the eleven filters found a matching move. The position has no move selected by this rule-set.':'Filter '+(hit+1)+' matched first: '+filterNames[hit]+'.'}
 function showResults(result,engineMoves=[],engineStatus=''){
  const filterCandidate=result.candidate;
@@ -572,7 +774,7 @@ async function go(){
  finally{$('go').disabled=false}
 }
 function back(){$('analysisView').classList.add('hidden');$('setupView').classList.remove('hidden');bestMove=null;last=null;renderSetup()}
-function init(){squareMarkup('board');squareMarkup('analysisBoard');bindBoard('board');bindBoard('analysisBoard');paletteInit();$('eraser').onclick=()=>{tool='erase';selectedSquare=null;$('toolStatus').textContent='Eraser';document.querySelectorAll('.piece-btn').forEach(b=>b.classList.remove('selected'));$('eraser').classList.add('active')};$('clear').onclick=clearBoard;$('start').onclick=startingPosition;$('flip').onclick=()=>{flipped=!flipped;renderSetup()};$('whiteTurn').onclick=()=>{side='w';$('whiteTurn').classList.add('active');$('blackTurn').classList.remove('active')};$('blackTurn').onclick=()=>{side='b';$('blackTurn').classList.add('active');$('whiteTurn').classList.remove('active')};$('load').onclick=()=>loadFen($('fen').value);$('fen').addEventListener('keydown',e=>{if(e.key==='Enter')loadFen($('fen').value)});$('go').onclick=go;$('back').onclick=back;$('newPosition').onclick=startingPosition;startingPosition()}
+function init(){squareMarkup('board');squareMarkup('analysisBoard');bindBoard('board');bindBoard('analysisBoard');paletteInit();$('eraser').onclick=()=>{tool='erase';selectedSquare=null;selectedMoves=[];$('toolStatus').textContent='Eraser';document.querySelectorAll('.piece-btn').forEach(b=>b.classList.remove('selected'));$('eraser').classList.add('active')};$('clear').onclick=clearBoard;$('start').onclick=startingPosition;$('flip').onclick=()=>{flipped=!flipped;renderSetup()};$('whiteTurn').onclick=()=>{side='w';$('whiteTurn').classList.add('active');$('blackTurn').classList.remove('active')};$('blackTurn').onclick=()=>{side='b';$('blackTurn').classList.add('active');$('whiteTurn').classList.remove('active')};$('load').onclick=()=>loadFen($('fen').value);$('fen').addEventListener('keydown',e=>{if(e.key==='Enter')loadFen($('fen').value)});$('go').onclick=go;$('back').onclick=back;$('newPosition').onclick=startingPosition;startingPosition()}
 init();
 })();
 </script>
