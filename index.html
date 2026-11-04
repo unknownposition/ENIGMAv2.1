@@ -189,8 +189,8 @@ function hasUndefendedGain(b,m){
  const attacker=b[m.from];
  if(!attacker)return false;
 
- // 1. A capture qualifies if the target was undefended, or if
- // a cheaper piece captures a more valuable defended piece.
+ // Filter 8 is for an actual material win by capture, not simply
+ // creating an attack. New attacks are handled by Filter 9.
  const target=b[m.to];
  if(target&&target[0]===opp&&target[1]!=='k'){
   const targetValue=values[target[1]]||0;
@@ -198,31 +198,6 @@ function hasUndefendedGain(b,m){
   const wasDefended=isSquareAttacked(b,m.to,opp);
   if(!wasDefended||attackerValue<targetValue)return true;
  }
-
- const after=makeMove(b,m);
-
- // 2. A move qualifies if it creates a NEW attack on an enemy piece
- // that has no defenders. Pieces that were already hanging do not
- // make every unrelated move qualify.
- for(let sq=0;sq<64;sq++){
-  const enemyPiece=after[sq];
-  if(!enemyPiece||enemyPiece[0]!==opp||enemyPiece[1]==='k')continue;
-
-  const newlyAttacked=
-   isSquareAttacked(after,sq,color)&&
-   !isSquareAttacked(b,sq,color);
-
-  const undefended=!isSquareAttacked(after,sq,opp);
-  if(!newlyAttacked||!undefended)continue;
-
-  // Avoid calling a hanging attacker's move a material gain.
-  const movedPiece=after[m.to];
-  if(movedPiece&&isSquareAttacked(after,m.to,opp)&&
-     !isSquareAttacked(after,m.to,color))continue;
-
-  return true;
- }
-
  return false;
 }
 function defendsHanging(b,m){
@@ -244,8 +219,18 @@ function defendsHanging(b,m){
 }
 function attacksAPiece(b,m){
  if(m.capture)return false;
- const before=b, after=makeMove(b,m), opp=m.color==='w'?'b':'w';
- for(let sq=0;sq<64;sq++){const p=after[sq];if(p&&p[0]===opp&&p[1]!=='k'&&isSquareAttacked(after,sq,m.color)&&!isSquareAttacked(before,sq,m.color))return true}
+ const color=m.color, opp=color==='w'?'b':'w';
+ const after=makeMove(b,m);
+
+ // Filter 9: after this move, at least one enemy piece is attacked
+ // that was not attacked before. It does not need to be undefended.
+ for(let sq=0;sq<64;sq++){
+  const enemyPiece=after[sq];
+  if(!enemyPiece||enemyPiece[0]!==opp||enemyPiece[1]==='k')continue;
+  if(isSquareAttacked(after,sq,color)&&!isSquareAttacked(b,sq,color)){
+   return true;
+  }
+ }
  return false;
 }
 function developsPiece(b,m){
@@ -854,16 +839,16 @@ function showResults(result,engineMoves=[],engineStatus=''){
       if(filterCandidate&&uciMove(filterCandidate)===uciMove(engineBest)){
         $('why').textContent='ENIGMA selected this move, which satisfies Filter '+(chosenFilter+1)+'.';
       }else if(filterCandidate){
-        $('why').textContent='ENIGMA filters selected this move.';
+        $('why').textContent='Stockfish selected this move. ENIGMA’s original filter candidate was '+san(filterCandidate,board)+' (Filter '+(result.hit+1)+').';
       }else{
         $('why').textContent=chosenFilter>=0
-          ? 'ENIGMA selected this move, which satisfies Filter '+(chosenFilter+1)+'.'
-          : 'ENIGMA selected this move, but due to a logic error, no filter was matched to it.';
+          ? 'Stockfish selected this move, which satisfies Filter '+(chosenFilter+1)+'.'
+          : 'Stockfish selected this move, but it does not match any of ENIGMA’s filters.';
       }
     }else{
       $('why').textContent=chosenFilter>=0
         ? 'ENIGMA selected this move using Filter '+(chosenFilter+1)+'.'
-        : 'Logic Error; No filter matched the selected move.';
+        : 'No filter matched the selected move.';
     }
   }else{
     $('best').textContent='—';
@@ -892,7 +877,7 @@ function showResults(result,engineMoves=[],engineStatus=''){
   }
   const top=engineMoves.slice(0,3).map((x,i)=>(i+1)+'. '+x.uci).join('   ');
   $('status').textContent=(engineBest?'Engine analysis completed. ':'Engine analysis did not return a usable move. ')+(top?'Top engine moves: '+top+'. ':'')+engineStatus;
-  $('engineBadge').textContent=engineBest?'ENIGMA FILTERS':'LOGIC UNAVAILABLE';
+  $('engineBadge').textContent=engineBest?'STOCKFISH + FILTERS':'LOGIC UNAVAILABLE';
   $('engineBadge').style.background=engineBest?'#203d28':'#4a2925';
   $('engineBadge').style.borderColor=engineBest?'#638451':'#9a5c50';
   renderAnalysis();
