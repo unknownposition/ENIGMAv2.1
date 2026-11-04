@@ -842,11 +842,11 @@ function showResults(result,engineMoves=[],engineStatus=''){
       if(filterCandidate&&uciMove(filterCandidate)===uciMove(engineBest)){
         $('why').textContent='ENIGMA selected this move, which satisfies Filter '+(chosenFilter+1)+'.';
       }else if(filterCandidate){
-        $('why').textContent='Stockfish selected this move. ENIGMA’s original filter candidate was '+san(filterCandidate,board)+' (Filter '+(result.hit+1)+').';
+        $('why').textContent='ENIGMA filters selected this move.';
       }else{
         $('why').textContent=chosenFilter>=0
-          ? 'Stockfish selected this move, which satisfies Filter '+(chosenFilter+1)+'.'
-          : 'Stockfish selected this move, but it does not match any of ENIGMA’s filters.';
+          ? 'ENIGMA selected this move, which satisfies Filter '+(chosenFilter+1)+'.'
+          : 'ENIGMA selected this move, but due to a logic error, it was not matched to a filter.';
       }
     }else{
       $('why').textContent=chosenFilter>=0
@@ -880,7 +880,7 @@ function showResults(result,engineMoves=[],engineStatus=''){
   }
   const top=engineMoves.slice(0,3).map((x,i)=>(i+1)+'. '+x.uci).join('   ');
   $('status').textContent=(engineBest?'Engine analysis completed. ':'Engine analysis did not return a usable move. ')+(top?'Top engine moves: '+top+'. ':'')+engineStatus;
-  $('engineBadge').textContent=engineBest?'STOCKFISH + FILTERS':'LOGIC UNAVAILABLE';
+  $('engineBadge').textContent=engineBest?'ENIGMA FILTERS':'LOGIC UNAVAILABLE';
   $('engineBadge').style.background=engineBest?'#203d28':'#4a2925';
   $('engineBadge').style.borderColor=engineBest?'#638451':'#9a5c50';
   renderAnalysis();
